@@ -1,0 +1,40 @@
+<?php
+// @codingStandardsIgnoreFile
+//----------------------------------------------------------------------
+// DATA: NI
+//----------------------------------------------------------------------
+// generated: 2017-01-26 14:40:50
+
+
+namespace blobfolio\phone\data;
+
+class dataNI extends data {
+
+	const CODE = 'NI';
+
+	const PREFIX = 505;
+
+	const REGION = 'North America';
+
+	const PATTERNS = array(
+		'[12578]\d{7}'
+	);
+
+	const TYPES = array(
+		'2\d{7}'=>array(
+			'fixed'
+		),
+		'5(?:5[0-7]\d{5}|[78]\d{6})|7[5-8]\d{6}|8\d{7}'=>array(
+			'mobile'
+		),
+		'1800\d{4}'=>array(
+			'toll_free'
+		)
+	);
+
+	const FORMATS = array(
+		'(\d{4})(\d{4})'=>'$1 $2'
+	);
+
+}
+?>

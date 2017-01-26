@@ -1,0 +1,35 @@
+{
+    "name": "blobfolio/blob-phone",
+    "description": "A lightweight implementation of libphonenumber for PHP.",
+    "keywords": [
+        "PHP",
+        "libphonenumber",
+        "phone",
+        "formatting"
+    ],
+    "version": "0.5",
+    "type": "library",
+    "homepage": "https://github.com/Blobfolio/blob-phone",
+    "license": "Apache",
+    "authors": [
+        {
+            "name": "Josh Stoik",
+            "email": "josh@blobfolio.com",
+            "homepage": "https://blobfolio.com"
+        }
+    ],
+    "require": {
+        "neitanod/forceutf8": "dev-master",
+        "blobfolio/blob-common": "*"
+    },
+    "config": {
+        "vendor-dir": "lib/vendor",
+        "preferred-install": "dist"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "blobfolio\\phone\\": "lib/blobfolio/phone"
+        }
+    }
+}
