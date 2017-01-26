@@ -133,7 +133,7 @@ class phone {
 	//
 	// @param type
 	// @return true/false
-	public function is_phone(string $type=null) {
+	public function is_phone($type=null) {
 		if (!is_null($type)) {
 			\blobfolio\common\ref\cast::array($type);
 			\blobfolio\common\ref\mb::strtolower($type);
