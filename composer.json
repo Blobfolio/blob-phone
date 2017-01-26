@@ -1,6 +1,6 @@
 {
     "name": "blobfolio/blob-phone",
-    "description": "A lightweight implementation of libphonenumber for PHP.",
+    "description": "A light(er)weight implementation of Google's amazing libphonenumber for PHP.",
     "keywords": [
         "PHP",
         "libphonenumber",
