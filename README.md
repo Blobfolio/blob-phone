@@ -54,7 +54,7 @@ The constructor accepts two arguments:
  * (*string*) Phone number (pre-formatted or not);
  * (*string*) (*optional*) ISO country code (suspected); Default: `"US"`
 
-Providing a probably country of origin will help with identification, so is recommended.
+Providing a probable country of origin will help with identification, so is recommended. Otherwise your number may end up on the wrong side of the planet.
 
 blob-phone uses a brute-force technique to identify and format a phone number, prioritizing tests as follows:
 
