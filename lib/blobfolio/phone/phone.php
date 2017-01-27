@@ -137,6 +137,10 @@ class phone {
 		if (!is_null($type)) {
 			\blobfolio\common\ref\cast::array($type);
 			\blobfolio\common\ref\mb::strtolower($type);
+			$type = array_filter($type, 'strlen');
+			if (!count($type)) {
+				$type = null;
+			}
 		}
 		return false !== $this->phone && (is_null($type) || count(array_intersect($type, $this->phone['types'])));
 	}

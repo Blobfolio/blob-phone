@@ -24,7 +24,7 @@ foreach ($phones as $phone) {
 	\blobfolio\test\cli::record('phone::__construct', array($phone), $p->get_data());
 }
 
-foreach ($phones AS $phone){
+foreach ($phones as $phone) {
 	$p = new \blobfolio\phone\phone($phone[0], $phone[1]);
 	\blobfolio\test\cli::record('phone::is_phone', array('mobile'), $p->is_phone('mobile'));
 }
