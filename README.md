@@ -2,16 +2,18 @@
 
 blob-phone is a light(er)-weight implementation of Google's amazing [libphonenumber](https://github.com/googlei18n/libphonenumber) for PHP.
 
+[![Build Status](https://travis-ci.org/Blobfolio/blob-phone.svg?branch=master)](https://travis-ci.org/Blobfolio/blob-phone)
 
+&nbsp;
 
-##### Table of Contents
+## Table of Contents
 
  * [Features](#features)
  * [Installation](#installation)
  * [Use](#use)
  * [License](#license)
 
-
+&nbsp;
 
 ## Features
 
@@ -23,7 +25,7 @@ blob-phone is primarily concerned with validating and formatting arbitrary telep
 
 Other data and formatting features from `libphonenumber` have been stripped out to reduce the library's size. For a more comprehensive implementation of `libphonenumber` written for PHP, take a look at [libphonenumber-for-php](https://github.com/giggsey/libphonenumber-for-php).
 
-
+&nbsp;
 
 ## Installation
 
@@ -39,7 +41,7 @@ Install with Composer:
 composer require "blobfolio/blob-phone:dev-master"
 ```
 
-
+&nbsp;
 
 ## Use
 
@@ -62,6 +64,8 @@ blob-phone uses a brute-force technique to identify and format a phone number, p
  * Other countries with the same prefix;
  * Other countries on the same continent;
  * Everywhere else, alphabetically;
+
+&nbsp;
 
 #### Check it
 
@@ -86,6 +90,8 @@ The possible types are:
 
 This method returns `TRUE` or `FALSE`.
 
+&nbsp;
+
 #### Pull It
 
 ```php
@@ -108,6 +114,8 @@ Array(
 */
 ```
 
+&nbsp;
+
 #### All Together Now...
 
 ```php
@@ -123,7 +131,7 @@ else {
 }
 ```
 
-
+&nbsp;
 
 ## License
 
