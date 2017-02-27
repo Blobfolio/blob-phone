@@ -100,3 +100,5 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals( false, $p->is_phone('mobile'));
 	}
 }
+
+?>

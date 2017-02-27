@@ -94,7 +94,11 @@ function recursive_rm(string $path='') {
 	$path = rtrim($path, '/');
 
 	//this must be below the build directory, and not this script
-	if (mb_substr($path, 0, mb_strlen(BUILD_PATH) + 1) !== BUILD_PATH . '/' || $path === BUILD_PATH || $path === __FILE__) {
+	if (
+		mb_substr($path, 0, mb_strlen(BUILD_PATH) + 1) !== BUILD_PATH . '/' ||
+		BUILD_PATH === $path ||
+		__FILE__ === $path
+	) {
 		return false;
 	}
 
@@ -105,7 +109,7 @@ function recursive_rm(string $path='') {
 	//directories require recursion
 	elseif ($handle = opendir($path)) {
 		while (false !== ($file = readdir($handle))) {
-			if (in_array($file, array('.', '..'))) {
+			if (in_array($file, array('.', '..'), true)) {
 				continue;
 			}
 
@@ -195,7 +199,7 @@ function array_to_php($var, int $indents=1) {
 	$array_type = \blobfolio\common\cast::array_type($var);
 	foreach ($var as $k=>$v) {
 		$line = str_repeat("\t", $indents);
-		if ($array_type !== 'sequential') {
+		if ('sequential' !== $array_type) {
 			if (is_numeric($k)) {
 				$line .= "$k=>";
 			}
@@ -294,12 +298,12 @@ foreach ($territories as $territory) {
 		}
 
 		$type = $pattern->parentNode->tagName;
-		if ($type === 'generalDesc') {
-			if (!in_array($p, $out['patterns'])) {
+		if ('generalDesc' === $type) {
+			if (!in_array($p, $out['patterns'], true)) {
 				$out['patterns'][] = $p;
 			}
 		}
-		elseif (false !== $nice = array_search($type, TYPE_MAP)) {
+		elseif (false !== $nice = array_search($type, TYPE_MAP, true)) {
 			if (!isset($out['types'][$p])) {
 				$out['types'][$p] = array();
 			}
@@ -355,7 +359,7 @@ foreach ($territories as $territory) {
 	}
 
 	$main = $territory->getAttribute('mainCountryForCode');
-	if ($main === 'true') {
+	if ('true' === $main) {
 		array_unshift($prefixes[$out['prefix']], $out['code']);
 	}
 	else {
@@ -374,7 +378,7 @@ foreach ($territories as $territory) {
 
 //real quick, run through data and add formatting rules to NANPA territories
 foreach ($data as $k=>$v) {
-	if ($k === 'US' || $v['prefix'] !== 1) {
+	if ('US' === $k || 1 !== $v['prefix']) {
 		continue;
 	}
 

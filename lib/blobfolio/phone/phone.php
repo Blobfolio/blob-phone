@@ -94,7 +94,7 @@ class phone {
 		\blobfolio\common\ref\cast::array($countries);
 
 		foreach ($countries as $c) {
-			if (in_array($c, $this->tried)) {
+			if (in_array($c, $this->tried, true)) {
 				continue;
 			}
 
@@ -194,7 +194,7 @@ class phone {
 	public static function sanitize_country(string &$country='') {
 		\blobfolio\common\ref\sanitize::country($country);
 		if (\blobfolio\common\mb::strlen($country) === 2) {
-			if (!in_array($country, data\prefixes::COUNTRIES)) {
+			if (!in_array($country, data\prefixes::COUNTRIES, true)) {
 				$country = false;
 			}
 		}
