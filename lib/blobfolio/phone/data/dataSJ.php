@@ -3,7 +3,7 @@
 //----------------------------------------------------------------------
 // DATA: SJ
 //----------------------------------------------------------------------
-// generated: 2017-01-26 14:40:50
+// generated: 2017-02-28 11:30:19
 
 
 namespace blobfolio\phone\data;
@@ -17,7 +17,7 @@ class dataSJ extends data {
 	const REGION = '';
 
 	const PATTERNS = array(
-		'0\d{4}|[4789]\d{7}'
+		'0\d{4}|[45789]\d{7}'
 	);
 
 	const TYPES = array(

@@ -3,7 +3,7 @@
 //----------------------------------------------------------------------
 // DATA: GY
 //----------------------------------------------------------------------
-// generated: 2017-01-26 14:40:50
+// generated: 2017-02-28 11:30:19
 
 
 namespace blobfolio\phone\data;
@@ -17,7 +17,7 @@ class dataGY extends data {
 	const REGION = '';
 
 	const PATTERNS = array(
-		'[2-4679]\d{6}'
+		'[2-46-9]\d{6}'
 	);
 
 	const TYPES = array(
