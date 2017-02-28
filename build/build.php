@@ -1,33 +1,32 @@
 <?php
-//---------------------------------------------------------------------
-// Compile Phone Formatting Metadata
-//---------------------------------------------------------------------
-// blob-common v7x
-// https://github.com/Blobfolio/blob-common
-//
-// This build script will download phone formatting metadata from
-// libphonenumber and save it in a more easily parsable way for our
-// limited purposes.
-//
-// REQUIREMENTS:
-//   -- PHP 7.0
-//   -- UNIX
-//   -- CURL
-//   -- MBSTRING
-//   -- DOM
-//
-// Copyright © 2017  Blobfolio, LLC  (email: hello@blobfolio.com)
+/**
+ * Compile phone source data.
+ *
+ * This build script will download phone formatting metadata
+ * from libphonenumber and save it in a more easily parsable
+ * way, optimized for our limited purposes.
+ *
+ * This script should be run via php-cli.
+ *
+ * Requires:
+ * PHP 7+
+ * UNIX
+ * CURL
+ * MBSTRING
+ * DOM
+ *
+ * @package blobfolio/phone
+ * @author	Blobfolio, LLC <hello@blobfolio.com>
+ */
 
-
-
-//-------------------------------------------------
+// -------------------------------------------------
 // Setup/Env
 
 define('BUILD_PATH', dirname(__FILE__));
 define('SRC_PATH', BUILD_PATH . '/src');
 define('DIST_PATH', dirname(BUILD_PATH) . '/lib/blobfolio/phone/data');
 
-//load the bootstrap
+// Load the bootstrap.
 @require_once(dirname(dirname(__FILE__)) . '/lib/vendor/autoload.php');
 
 define('TERRITORY_DEFAULT', array(
@@ -42,12 +41,10 @@ define('TERRITORY_DEFAULT', array(
 define('TYPE_MAP', array(
 	'fixed'=>'fixedLine',
 	'mobile'=>'mobile',
-	//'pager'=>'pager',
 	'personal_number'=>'personalNumber',
 	'premium_rate'=>'premiumRate',
 	'shared_cost'=>'sharedCost',
 	'toll_free'=>'tollFree',
-	//'uan'=>'uan',
 	'voicemail'=>'voicemail',
 	'voip'=>'voip'
 ));
@@ -63,12 +60,15 @@ $start = microtime(true);
 
 
 
-//-------------------------------------------------
-// Debug Stdout
-//
-// @param line
-// @param dividers
-// @return n/a
+/**
+ * STDOUT wrapper.
+ *
+ * Make it easier to print progress to the terminal.
+ *
+ * @param string $line Content.
+ * @param bool $dividers Print dividing lines.
+ * @return void Nothing.
+ */
 function debug_stdout(string $line='', bool $dividers=false) {
 	if ($dividers) {
 		echo str_repeat('-', 50) . "\n";
@@ -81,11 +81,15 @@ function debug_stdout(string $line='', bool $dividers=false) {
 
 
 
-//-------------------------------------------------
-// Recursive Rm
-//
-// @param dir/file
-// @return true
+/**
+ * Recursive rmdir()
+ *
+ * Delete all files within a directory, then
+ * the directory itself.
+ *
+ * @param string $path Path.
+ * @return bool Status.
+ */
 function recursive_rm(string $path='') {
 	if (false === $path = realpath($path)) {
 		return false;
@@ -93,7 +97,7 @@ function recursive_rm(string $path='') {
 
 	$path = rtrim($path, '/');
 
-	//this must be below the build directory, and not this script
+	// This must be below the build directory, and not this script.
 	if (
 		mb_substr($path, 0, mb_strlen(BUILD_PATH) + 1) !== BUILD_PATH . '/' ||
 		BUILD_PATH === $path ||
@@ -102,11 +106,11 @@ function recursive_rm(string $path='') {
 		return false;
 	}
 
-	//files are easy
+	// Files are easy.
 	if (is_file($path)) {
 		@unlink($path);
 	}
-	//directories require recursion
+	// Directories require recursion.
 	elseif ($handle = opendir($path)) {
 		while (false !== ($file = readdir($handle))) {
 			if (in_array($file, array('.', '..'), true)) {
@@ -121,20 +125,24 @@ function recursive_rm(string $path='') {
 
 
 
-//-------------------------------------------------
-// Batch Fetch
-//
-// @param URLs
-// @return data
+/**
+ * Batch CURL URLs
+ *
+ * It is much more efficient to use multi-proc
+ * CURL as there are hundreds of files to get.
+ *
+ * @param array $urls URLs.
+ * @return array Responses.
+ */
 function fetch_urls(array $urls=array()) {
 	$fetched = array();
 
-	//bad start...
+	// Bad start...
 	if (!count($urls)) {
 		return $fetched;
 	}
 
-	//loosely filter URLs
+	// Loosely filter URLs.
 	foreach ($urls as $k=>$v) {
 		$urls[$k] = filter_var($v, FILTER_SANITIZE_URL);
 		if (!preg_match('/^https?:\/\//', $urls[$k])) {
@@ -148,7 +156,7 @@ function fetch_urls(array $urls=array()) {
 		$multi = curl_multi_init();
 		$curls = array();
 
-		//set up curl request for each site
+		// Set up curl request for each site.
 		foreach ($chunk as $url) {
 			$curls[$url] = curl_init($url);
 
@@ -161,13 +169,13 @@ function fetch_urls(array $urls=array()) {
 			curl_multi_add_handle($multi, $curls[$url]);
 		}
 
-		//process requests
+		// Process requests.
 		do {
 			curl_multi_exec($multi, $running);
 			curl_multi_select($multi);
 		} while ($running > 0);
 
-		//update information
+		// Update information.
 		foreach ($chunk as $url) {
 			$fetched[$url] = (int) curl_getinfo($curls[$url], CURLINFO_HTTP_CODE);
 			if ($fetched[$url] >= 200 && $fetched[$url] < 400) {
@@ -184,12 +192,16 @@ function fetch_urls(array $urls=array()) {
 
 
 
-//-------------------------------------------------
-// Array to PHP Code
-//
-// @param var
-// @param indents
-// @return string
+/**
+ * Array to PHP Code
+ *
+ * Convert a variable into a string
+ * representing PHP code.
+ *
+ * @param array $var Data.
+ * @param int $indents Number of tabs to append.
+ * @return string Code.
+ */
 function array_to_php($var, int $indents=1) {
 	if (!is_array($var) || !count($var)) {
 		return '';
@@ -224,22 +236,22 @@ function array_to_php($var, int $indents=1) {
 
 
 
-//-------------------------------------------------
+// -------------------------------------------------
 // Begin!
 
-//if (file_exists(SRC_PATH)) {
-//	recursive_rm(SRC_PATH);
-//}
-//mkdir(SRC_PATH, 0755);
+if (file_exists(SRC_PATH)) {
+	recursive_rm(SRC_PATH);
+}
+mkdir(SRC_PATH, 0755);
 
 
 
-//-------------------------------------------------
+// -------------------------------------------------
 // Download!
 
 debug_stdout('Compiling', true);
 
-//get source data
+// Get source data.
 if (file_exists(XML_LOCAL)) {
 	debug_stdout('   ++ Reading source data from local copy...');
 	$xml = array(XML_REMOTE=>@file_get_contents(XML_LOCAL));
@@ -254,21 +266,21 @@ else {
 		exit;
 	}
 
-	//save it
+	// Save it.
 	debug_stdout('   ++ Saving local copy...');
 	@file_put_contents(XML_LOCAL, $xml[XML_REMOTE]);
 }
 
 
 
-//-------------------------------------------------
+// -------------------------------------------------
 // Parse!
 
 libxml_use_internal_errors(true);
 $dom = new \DOMDocument('1.0', 'UTF-8');
 $dom->loadXML($xml[XML_REMOTE]);
 
-//we want territories
+// We want territories.
 $territories = $dom->getElementsByTagName('territory');
 if (!$territories->length) {
 	debug_stdout('   ++ Invalid data...');
@@ -281,12 +293,12 @@ foreach ($territories as $territory) {
 	$out['code'] = $territory->getAttribute('id');
 	$out['prefix'] = (int) $territory->getAttribute('countryCode');
 
-	//bad match?
+	// Bad match?
 	if (!preg_match('/^[A-Z]{2}$/', $out['code']) || !$out['prefix']) {
 		continue;
 	}
 
-	//find patterns
+	// Find patterns.
 	$patterns = $territory->getElementsByTagName('nationalNumberPattern');
 	if (!$patterns->length) {
 		continue;
@@ -315,7 +327,7 @@ foreach ($territories as $territory) {
 		continue;
 	}
 
-	//sort our types
+	// Sort our types.
 	foreach ($out['types'] as $k=>$v) {
 		sort($out['types'][$k]);
 		$out['types'][$k] = array_unique($out['types'][$k]);
@@ -325,7 +337,7 @@ foreach ($territories as $territory) {
 		continue;
 	}
 
-	//lastly, formatting patterns
+	// Lastly, formatting patterns.
 	$formats = $territory->getElementsByTagName('numberFormat');
 	if ($formats->length) {
 		foreach ($formats as $format) {
@@ -334,7 +346,7 @@ foreach ($territories as $territory) {
 				continue;
 			}
 
-			//try international format first
+			// Try international format first.
 			$f = $format->getElementsByTagName('intlFormat');
 			if ($f->length && false !== \blobfolio\common\mb::strpos($f->item(0)->nodeValue, '$')) {
 				$out['formats'][$pattern] = $f->item(0)->nodeValue;
@@ -353,7 +365,7 @@ foreach ($territories as $territory) {
 
 	$data[$out['code']] = $out;
 
-	//add it to the prefix list
+	// Add it to the prefix list.
 	if (!isset($prefixes[$out['prefix']])) {
 		$prefixes[$out['prefix']] = array();
 	}
@@ -366,7 +378,7 @@ foreach ($territories as $territory) {
 		$prefixes[$out['prefix']][] = $out['code'];
 	}
 
-	//and the region list
+	// And the region list.
 	if ($out['region']) {
 		if (!isset($regions[$out['region']])) {
 			$regions[$out['region']] = array();
@@ -376,7 +388,7 @@ foreach ($territories as $territory) {
 	}
 }
 
-//real quick, run through data and add formatting rules to NANPA territories
+// Real quick, run through data and add formatting rules to NANPA territories.
 foreach ($data as $k=>$v) {
 	if ('US' === $k || 1 !== $v['prefix']) {
 		continue;
@@ -385,7 +397,7 @@ foreach ($data as $k=>$v) {
 	$data[$k]['formats'] = $data['US']['formats'];
 }
 
-//also, clean up regions
+// Also, clean up regions.
 ksort($regions);
 foreach ($regions as $k=>$v) {
 	sort($regions[$k]);
@@ -393,7 +405,7 @@ foreach ($regions as $k=>$v) {
 
 
 
-//-------------------------------------------------
+// -------------------------------------------------
 // Clean Up!
 
 debug_stdout('');
@@ -443,4 +455,4 @@ debug_stdout('');
 debug_stdout('Done!', true);
 debug_stdout('   ++ Found ' . count($data) . ' countries, ' . count($prefixes) . ' prefixes.');
 debug_stdout('   ++ Finished in ' . round($end - $start, 2) . ' seconds.');
-?>
+

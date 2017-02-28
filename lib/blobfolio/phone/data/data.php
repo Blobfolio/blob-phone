@@ -1,42 +1,50 @@
 <?php
-//---------------------------------------------------------------------
-// DATA: GENERIC
-//---------------------------------------------------------------------
+/**
+ * Data Class (General)
+ *
+ * This class is extended by auto-generated
+ * country data classes.
+ *
+ * Constants:
+ * PREFIX=xxx;
+ * CODE=xx;
+ * REGION=xxx;
+ * PATTERNS=[xxx];
+ * FORMATS=[xxx];
+ * TYPES=[xxx];
+ *
+ * @package blobfolio/phone
+ * @author	Blobfolio, LLC <hello@blobfolio.com>
+ */
 
 namespace blobfolio\phone\data;
 
 abstract class data {
 
-	//const PREFIX=xxx;
-	//const CODE=xx;
-	//const REGION=xxx;
-	//const PATTERNS=[xxx];
-	//const FORMATS=[xxx];
-	//const TYPES=[xxx];
-
-	//-------------------------------------------------
-	// Try to match a phone number
-	//
-	// @param phone
-	// @return data or false
+	/**
+	 * Validate a Number
+	 *
+	 * @param string $phone Phone number.
+	 * @return array|bool Phone data. False on failure.
+	 */
 	public static function match(string $phone='') {
 		\blobfolio\phone\phone::sanitize_phone($phone);
 		if (false === $phone) {
 			return false;
 		}
 
-		//test the number with and without the prefix
+		// Test the number with and without the prefix.
 		$test = array($phone);
 		$tmp = ltrim($phone, '0');
 		if (\blobfolio\common\mb::substr($tmp, 0, \blobfolio\common\mb::strlen(static::PREFIX)) === (string) static::PREFIX) {
 			$test[] = \blobfolio\common\mb::substr($tmp, \blobfolio\common\mb::strlen(static::PREFIX));
 		}
 
-		//do they match the patterns?
+		// Do they match the patterns?
 		foreach ($test as $t) {
 			foreach (static::PATTERNS as $p) {
 				if (preg_match("/^($p)$/", $t)) {
-					//should match a specific type
+					// Should match a specific type.
 					$types = static::types($t);
 					if (!count($types)) {
 						continue;
@@ -56,11 +64,12 @@ abstract class data {
 		return false;
 	}
 
-	//-------------------------------------------------
-	// Apply Formatting
-	//
-	// @param phone
-	// @return formatted
+	/**
+	 * Apply formatting rules.
+	 *
+	 * @param string $phone Phone number.
+	 * @return string Phone number.
+	 */
 	protected static function format(string $phone='') {
 		foreach (static::FORMATS as $k=>$v) {
 			if (preg_match("/^($k)$/", $phone)) {
@@ -68,15 +77,16 @@ abstract class data {
 			}
 		}
 
-		//no formatting
+		// No formatting.
 		return $phone;
 	}
 
-	//-------------------------------------------------
-	// Get Type(s)
-	//
-	// @param phone
-	// @return types
+	/**
+	 * Get possible types (e.g. Mobile)
+	 *
+	 * @param string $phone Phone number.
+	 * @return array Types.
+	 */
 	protected static function types(string $phone='') {
 		$out = array();
 
@@ -95,4 +105,4 @@ abstract class data {
 	}
 }
 
-?>
+

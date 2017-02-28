@@ -1,13 +1,23 @@
 <?php
-//---------------------------------------------------------------------
-// Phone Tests!
-//---------------------------------------------------------------------
+/**
+ * Phone tests.
+ *
+ * PHPUnit tests for \blobfolio\phone\phone.
+ *
+ * @package blobfolio/phone
+ * @author	Blobfolio, LLC <hello@blobfolio.com>
+ */
 
+/**
+ * Test Suite
+ */
 class phone_tests extends \PHPUnit\Framework\TestCase {
 
-	//-------------------------------------------------
-	// US Valid
-
+	/**
+	 * Valid US Number, w/ Country
+	 *
+	 * @return void Nothing.
+	 */
 	function test_valid_us_with_country() {
 		$p = new \blobfolio\phone\phone(2015550123, 'US');
 		$p = $p->get_data();
@@ -20,6 +30,11 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals( '+1 201-555-0123', $p['number'] );
 	}
 
+	/**
+	 * Valid US Number, w/o Country
+	 *
+	 * @return void Nothing.
+	 */
 	function test_valid_us_without_country() {
 		$p = new \blobfolio\phone\phone(2015550123);
 		$p = $p->get_data();
@@ -32,9 +47,11 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals( '+1 201-555-0123', $p['number'] );
 	}
 
-	//-------------------------------------------------
-	// Uruguay
-
+	/**
+	 * Uruguay Number
+	 *
+	 * @return void Nothing.
+	 */
 	function test_valid_uy_with_country() {
 		$p = new \blobfolio\phone\phone(94231234, 'UY');
 		$p = $p->get_data();
@@ -47,9 +64,11 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals( '+598 9423 1234', $p['number'] );
 	}
 
-	//-------------------------------------------------
-	// Canada
-
+	/**
+	 * Canadian Number, Wrong Country
+	 *
+	 * @return void Nothing.
+	 */
 	function test_valid_ca_with_wrong_country() {
 		$p = new \blobfolio\phone\phone(2042345678, 'US');
 		$p = $p->get_data();
@@ -62,9 +81,11 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals( '+1 204-234-5678', $p['number'] );
 	}
 
-	//-------------------------------------------------
-	// China
-
+	/**
+	 * Chinese Number
+	 *
+	 * @return void Nothing.
+	 */
 	function test_valid_cn_with_country() {
 		$p = new \blobfolio\phone\phone(1012345678, 'CN');
 		$p = $p->get_data();
@@ -77,9 +98,11 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals( '+86 10 1234 5678', $p['number'] );
 	}
 
-	//-------------------------------------------------
-	// Mobile
-
+	/**
+	 * Test Mobile Type Detection
+	 *
+	 * @return void Nothing.
+	 */
 	function test_mobile() {
 		$p = new \blobfolio\phone\phone(2015550123, 'US');
 		$this->assertEquals( true, $p->is_phone('mobile'));
@@ -101,4 +124,4 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 	}
 }
 
-?>
+

@@ -1,7 +1,10 @@
 <?php
-//---------------------------------------------------------------------
-// PHONE
-//---------------------------------------------------------------------
+/**
+ * Main Phone Class
+ *
+ * @package blobfolio/phone
+ * @author	Blobfolio, LLC <hello@blobfolio.com>
+ */
 
 namespace blobfolio\phone;
 
@@ -36,16 +39,17 @@ class phone {
 	protected $phone = false;
 	protected $tried = array();
 
-	//---------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 	// Initialization and destruction
-	//---------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 
-	//-------------------------------------------------
-	// Initialize the object
-	//
-	// @param phone
-	// @param country
-	// @return true/false
+	/**
+	 * Constructor
+	 *
+	 * @param string $phone Phone number.
+	 * @param string $country Country.
+	 * @return bool True/false.
+	 */
 	public function __construct(string $phone='', string $country='') {
 		$this->phone = false;
 
@@ -60,13 +64,13 @@ class phone {
 			$country = 'US';
 		}
 
-		//try the main country first
+		// Try the main country first.
 		if (false === $this->match($phone, $country)) {
 			$func = "\\blobfolio\\phone\\data\\data$country";
 
-			//try countries with the same prefix
+			// Try countries with the same prefix.
 			if (false === $this->match($phone, data\prefixes::PREFIXES[$func::PREFIX])) {
-				//try countries from the broad region
+				// Try countries from the broad region.
 				if (strlen($func::REGION)) {
 					if ($this->match($phone, data\prefixes::REGIONS[$func::REGION])) {
 						return true;
@@ -81,15 +85,17 @@ class phone {
 			return true;
 		}
 
-		//try everything else
+		// Try everything else.
 		return $this->match($phone, data\prefixes::COUNTRIES);
 	}
 
-	//-------------------------------------------------
-	// Try to Match to country/ies
-	//
-	// @param phone
-	// @param countries
+	/**
+	 * Match Countries
+	 *
+	 * @param string $phone Phone number.
+	 * @param array $countries Countries.
+	 * @return bool True/false.
+	 */
 	protected function match(string $phone='', $countries=array()) {
 		\blobfolio\common\ref\cast::array($countries);
 
@@ -109,30 +115,32 @@ class phone {
 		return false;
 	}
 
-	//-------------------------------------------------
-	// Stringify
-	//
-	// @param n/a
-	// @return string
+	/**
+	 * Cast to String
+	 *
+	 * @return string Phone number.
+	 */
 	public function __toString() {
 		return $this->is_phone() ? $this->phone['number'] : '';
 	}
 
-	//--------------------------------------------------------------------- end init
+	// --------------------------------------------------------------------- end init
 
 
 
-	//---------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 	// Helpers
-	//---------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 
-	//-------------------------------------------------
-	// Is Phone?
-	//
-	// is this a valid phone?
-	//
-	// @param type
-	// @return true/false
+	/**
+	 * Is Phone Valid?
+	 *
+	 * Check if a phone number is valid, optionally
+	 * of a specific type (e.g. Mobile).
+	 *
+	 * @param string $type Type.
+	 * @return bool True/false.
+	 */
 	public function is_phone($type=null) {
 		if (!is_null($type)) {
 			\blobfolio\common\ref\cast::array($type);
@@ -145,11 +153,15 @@ class phone {
 		return false !== $this->phone && (is_null($type) || count(array_intersect($type, $this->phone['types'])));
 	}
 
-	//-------------------------------------------------
-	// Get Data
-	//
-	// @param n/a
-	// @return data
+	/**
+	 * Get Data
+	 *
+	 * Return phone data as an array, or
+	 * fetch a specific variable.
+	 *
+	 * @param string $key Data key.
+	 * @return mixed Phone data. False on failure.
+	 */
 	public function get_data(string $key=null) {
 		if (!$this->is_phone()) {
 			return false;
@@ -162,17 +174,18 @@ class phone {
 		return $this->phone;
 	}
 
-	//-------------------------------------------------
-	// Sanitize Phone
-	//
-	// reduce a phone number to digits only
-	//
-	// @param phone
-	// @return true
+	/**
+	 * Sanitize Phone Number
+	 *
+	 * Reduce a string to only digits.
+	 *
+	 * @param string $phone Phone number.
+	 * @return bool True/false.
+	 */
 	public static function sanitize_phone(string &$phone = '') {
 		\blobfolio\common\ref\cast::string($phone);
 
-		//replace number chars
+		// Replace number chars.
 		$from = array_keys(\blobfolio\common\constants::NUMBER_CHARS);
 		$to = array_values(\blobfolio\common\constants::NUMBER_CHARS);
 		$phone = str_replace($from, $to, $phone);
@@ -186,11 +199,14 @@ class phone {
 		return true;
 	}
 
-	//-------------------------------------------------
-	// Sanitize Country
-	//
-	// @param country
-	// @return true
+	/**
+	 * Sanitize Country
+	 *
+	 * Make sure the country is an ISO code.
+	 *
+	 * @param string $country Country.
+	 * @return bool True/false.
+	 */
 	public static function sanitize_country(string &$country='') {
 		\blobfolio\common\ref\sanitize::country($country);
 		if (\blobfolio\common\mb::strlen($country) === 2) {
@@ -205,7 +221,7 @@ class phone {
 		return true;
 	}
 
-	//---------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 }
 
-?>
+
