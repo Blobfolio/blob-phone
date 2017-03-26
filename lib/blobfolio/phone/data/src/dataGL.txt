@@ -1,0 +1,42 @@
+<?php
+//----------------------------------------------------------------------
+// DATA: GL
+//----------------------------------------------------------------------
+// generated: 2017-03-26 12:06:06
+
+
+namespace blobfolio\phone\data;
+
+class dataGL extends data {
+
+	const CODE = 'GL';
+
+	const PREFIX = 299;
+
+	const REGION = 'North America';
+
+	const PATTERNS = array(
+		'[1-689]\d{5}'
+	);
+
+	const TYPES = array(
+		'(?:19|3[1-6]|6[14689]|8[14-79]|9\d)\d{4}'=>array(
+			'fixed'
+		),
+		'[245][2-9]\d{4}'=>array(
+			'mobile'
+		),
+		'80\d{4}'=>array(
+			'toll_free'
+		),
+		'3[89]\d{4}'=>array(
+			'voip'
+		)
+	);
+
+	const FORMATS = array(
+		'(\d{2})(\d{2})(\d{2})'=>'$1 $2 $3'
+	);
+
+}
+?>

@@ -67,6 +67,7 @@ class phone {
 		// Try the main country first.
 		if (false === $this->match($phone, $country)) {
 			$func = "\\blobfolio\\phone\\data\\data$country";
+			@require_once(dirname(__FILE__) . "/data/src/data$country.txt");
 
 			// Try countries with the same prefix.
 			if (false === $this->match($phone, data\prefixes::PREFIXES[$func::PREFIX])) {
@@ -106,6 +107,7 @@ class phone {
 
 			$this->tried[] = $c;
 			$func = "blobfolio\\phone\\data\\data$c";
+			@require_once(dirname(__FILE__) . "/data/src/data$c.txt");
 			if (false !== $tmp = $func::match($phone)) {
 				$this->phone = $tmp;
 				return true;

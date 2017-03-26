@@ -23,8 +23,9 @@
 // Setup/Env
 
 define('BUILD_PATH', dirname(__FILE__));
-define('SRC_PATH', BUILD_PATH . '/src');
+define('SOURCE_PATH', BUILD_PATH . '/src');
 define('DIST_PATH', dirname(BUILD_PATH) . '/lib/blobfolio/phone/data');
+define('DATA_PATH', DIST_PATH . '/src');
 
 // Load the bootstrap.
 @require_once(dirname(dirname(__FILE__)) . '/lib/vendor/autoload.php');
@@ -50,7 +51,10 @@ define('TYPE_MAP', array(
 ));
 
 define('XML_REMOTE', 'https://raw.githubusercontent.com/googlei18n/libphonenumber/master/resources/PhoneNumberMetadata.xml');
-define('XML_LOCAL', SRC_PATH . '/phonenumbers.xml');
+define('XML_LOCAL', SOURCE_PATH . '/phonenumbers.xml');
+
+// How long should downloaded files be cached?
+define('DOWNLOAD_CACHE', 7200);
 
 $data = array();
 $prefixes = array();
@@ -82,45 +86,79 @@ function debug_stdout(string $line='', bool $dividers=false) {
 
 
 /**
- * Recursive rmdir()
+ * URL to Cache Path
  *
- * Delete all files within a directory, then
- * the directory itself.
+ * The local name to use for a given URL.
  *
- * @param string $path Path.
- * @return bool Status.
+ * @param string $url URL.
+ * @return string Path.
  */
-function recursive_rm(string $path='') {
-	if (false === $path = realpath($path)) {
-		return false;
+function cache_path(string $url) {
+	// Strip and translate a little.
+	$url = strtolower($url);
+	$url = preg_replace('/^https?:\/\//', '', $url);
+	$url = str_replace(array('/','\\','?','#'), '-', $url);
+
+	return SOURCE_PATH . '/' . $url;
+}
+
+
+
+/**
+ * Get Cache
+ *
+ * Return the local content if available.
+ *
+ * @param string $url URL.
+ * @return string|bool Content or false.
+ */
+function get_cache(string $url) {
+	static $limit;
+
+	// Set the limit if we haven't already.
+	if (is_null($limit)) {
+		file_put_contents(SOURCE_PATH . '/limit', 'hi');
+		$limit = filemtime(SOURCE_PATH . '/limit') - DOWNLOAD_CACHE;
+		unlink(SOURCE_PATH . '/limit');
 	}
 
-	$path = rtrim($path, '/');
-
-	// This must be below the build directory, and not this script.
-	if (
-		mb_substr($path, 0, mb_strlen(BUILD_PATH) + 1) !== BUILD_PATH . '/' ||
-		BUILD_PATH === $path ||
-		__FILE__ === $path
-	) {
-		return false;
-	}
-
-	// Files are easy.
-	if (is_file($path)) {
-		@unlink($path);
-	}
-	// Directories require recursion.
-	elseif ($handle = opendir($path)) {
-		while (false !== ($file = readdir($handle))) {
-			if (in_array($file, array('.', '..'), true)) {
-				continue;
+	try {
+		$file = cache_path($url);
+		if (file_exists($file)) {
+			if (filemtime($file) < $limit) {
+				unlink($file);
 			}
-
-			recursive_rm("$path/$file");
+			else {
+				return file_get_contents($file);
+			}
 		}
-		@rmdir($path);
+	} catch (Throwable $e) {
+		return false;
 	}
+
+	return false;
+}
+
+
+
+/**
+ * Save Cache
+ *
+ * Save a fetched URL locally.
+ *
+ * @param string $url URL.
+ * @param string $content Content.
+ * @return bool True/false.
+ */
+function save_cache(string $url, string $content) {
+	try {
+		$file = cache_path($url);
+		return @file_put_contents($file, $content);
+	} catch (Throwable $e) {
+		return false;
+	}
+
+	return false;
 }
 
 
@@ -136,17 +174,25 @@ function recursive_rm(string $path='') {
  */
 function fetch_urls(array $urls=array()) {
 	$fetched = array();
+	$cached = array();
 
 	// Bad start...
 	if (!count($urls)) {
 		return $fetched;
 	}
 
-	// Loosely filter URLs.
+	// Loosely filter URLs, and look for cache.
 	foreach ($urls as $k=>$v) {
 		$urls[$k] = filter_var($v, FILTER_SANITIZE_URL);
 		if (!preg_match('/^https?:\/\//', $urls[$k])) {
 			unset($urls[$k]);
+			continue;
+		}
+
+		if (false !== $cache = get_cache($urls[$k])) {
+			$cached[$urls[$k]] = $cache;
+			unset($urls[$k]);
+			continue;
 		}
 	}
 
@@ -163,7 +209,7 @@ function fetch_urls(array $urls=array()) {
 			curl_setopt($curls[$url], CURLOPT_HEADER, false);
 			curl_setopt($curls[$url], CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($curls[$url], CURLOPT_TIMEOUT, 10);
-			curl_setopt($curls[$url], CURLOPT_USERAGENT, 'blob-mimes');
+			curl_setopt($curls[$url], CURLOPT_USERAGENT, 'blob-phone');
 			curl_setopt($curls[$url], CURLOPT_FOLLOWLOCATION, true);
 
 			curl_multi_add_handle($multi, $curls[$url]);
@@ -180,11 +226,17 @@ function fetch_urls(array $urls=array()) {
 			$fetched[$url] = (int) curl_getinfo($curls[$url], CURLINFO_HTTP_CODE);
 			if ($fetched[$url] >= 200 && $fetched[$url] < 400) {
 				$fetched[$url] = curl_multi_getcontent($curls[$url]);
+				save_cache($url, $fetched[$url]);
 			}
 			curl_multi_remove_handle($multi, $curls[$url]);
 		}
 
 		curl_multi_close($multi);
+	}
+
+	// Add our cached results back.
+	foreach ($cached as $k=>$v) {
+		$fetched[$k] = $v;
 	}
 
 	return $fetched;
@@ -239,10 +291,9 @@ function array_to_php($var, int $indents=1) {
 // -------------------------------------------------
 // Begin!
 
-if (file_exists(SRC_PATH)) {
-	recursive_rm(SRC_PATH);
+if (!file_exists(SOURCE_PATH)) {
+	mkdir(SOURCE_PATH, 0755);
 }
-mkdir(SRC_PATH, 0755);
 
 
 
@@ -412,10 +463,10 @@ debug_stdout('');
 debug_stdout('Saving', true);
 
 debug_stdout('   ++ Removing old classes...');
-if ($handle = opendir(DIST_PATH)) {
+if ($handle = opendir(DATA_PATH)) {
 	while (false !== ($file = readdir($handle))) {
-		if (preg_match('/^data[A-Z]{2}\.php$/', $file)) {
-			@unlink(DIST_PATH . "/$file");
+		if (preg_match('/^data[A-Z]{2}\.txt$/', $file)) {
+			@unlink(DATA_PATH . "/$file");
 		}
 	}
 	closedir($handle);
@@ -424,7 +475,7 @@ if ($handle = opendir(DIST_PATH)) {
 debug_stdout('   ++ Generating new classes...');
 ksort($data);
 foreach ($data as $k=>$v) {
-	$content = "<?php\n// @codingStandardsIgnoreFile\n//" . str_repeat('-', 70);
+	$content = "<?php\n//" . str_repeat('-', 70);
 	$content .= "\n// DATA: $k\n//" . str_repeat('-', 70);
 	$content .= "\n// generated: " . date('Y-m-d H:i:s');
 	$content .= "\n\n\nnamespace blobfolio\\phone\\data;\n\nclass data$k extends data {\n\n";
@@ -436,7 +487,7 @@ foreach ($data as $k=>$v) {
 	$content .= "\tconst FORMATS = array(" . array_to_php($v['formats'], 2) . ");\n\n";
 	$content .= "}\n?>";
 
-	@file_put_contents(DIST_PATH . "/data$k.php", $content);
+	@file_put_contents(DATA_PATH . "/data$k.txt", $content);
 }
 
 ksort($prefixes);
