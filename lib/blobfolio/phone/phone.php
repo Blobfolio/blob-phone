@@ -51,8 +51,8 @@ class phone {
 	 * @return bool True/false.
 	 */
 	public function __construct($phone='', $country='') {
-		\blobfolio\common\ref\cast::string($phone, true);
-		\blobfolio\common\ref\cast::string($country, true);
+		\blobfolio\common\ref\cast::to_string($phone, true);
+		\blobfolio\common\ref\cast::to_string($country, true);
 
 		$this->phone = false;
 
@@ -101,8 +101,8 @@ class phone {
 	 * @return bool True/false.
 	 */
 	protected function match($phone='', $countries=array()) {
-		\blobfolio\common\ref\cast::string($phone, true);
-		\blobfolio\common\ref\cast::array($countries);
+		\blobfolio\common\ref\cast::to_string($phone, true);
+		\blobfolio\common\ref\cast::to_array($countries);
 
 		foreach ($countries as $c) {
 			if (in_array($c, $this->tried, true)) {
@@ -149,7 +149,7 @@ class phone {
 	 */
 	public function is_phone($type=null) {
 		if (!is_null($type)) {
-			\blobfolio\common\ref\cast::array($type);
+			\blobfolio\common\ref\cast::to_array($type);
 			\blobfolio\common\ref\mb::strtolower($type);
 			$type = array_filter($type, 'strlen');
 			if (!count($type)) {
@@ -174,7 +174,7 @@ class phone {
 		}
 
 		if (!is_null($key)) {
-			\blobfolio\common\ref\cast::string($key, true);
+			\blobfolio\common\ref\cast::to_string($key, true);
 			return isset($this->phone[$key]) ? $this->phone[$key] : false;
 		}
 
@@ -190,7 +190,7 @@ class phone {
 	 * @return bool True/false.
 	 */
 	public static function sanitize_phone(&$phone = '') {
-		\blobfolio\common\ref\cast::string($phone);
+		\blobfolio\common\ref\cast::to_string($phone);
 
 		// Replace number chars.
 		$from = array_keys(\blobfolio\common\constants::NUMBER_CHARS);

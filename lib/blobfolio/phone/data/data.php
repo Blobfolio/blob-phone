@@ -28,7 +28,7 @@ abstract class data {
 	 * @return array|bool Phone data. False on failure.
 	 */
 	public static function match($phone='') {
-		\blobfolio\common\ref\cast::string($phone, true);
+		\blobfolio\common\ref\cast::to_string($phone, true);
 		\blobfolio\phone\phone::sanitize_phone($phone);
 		if (false === $phone) {
 			return false;
@@ -72,7 +72,7 @@ abstract class data {
 	 * @return string Phone number.
 	 */
 	protected static function format($phone='') {
-		\blobfolio\common\ref\cast::string($phone, true);
+		\blobfolio\common\ref\cast::to_string($phone, true);
 		foreach (static::FORMATS as $k=>$v) {
 			if (preg_match("/^($k)$/", $phone)) {
 				return preg_replace("/^$k$/", $v, $phone);
@@ -90,7 +90,7 @@ abstract class data {
 	 * @return array Types.
 	 */
 	protected static function types($phone='') {
-		\blobfolio\common\ref\cast::string($phone, true);
+		\blobfolio\common\ref\cast::to_string($phone, true);
 
 		$out = array();
 
