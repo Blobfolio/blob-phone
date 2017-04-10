@@ -214,7 +214,8 @@ class phone {
 	 * @param string $country Country.
 	 * @return bool True/false.
 	 */
-	public static function sanitize_country(string &$country='') {
+	public static function sanitize_country(&$country='') {
+		\blobfolio\common\ref\cast::to_string($country, true);
 		\blobfolio\common\ref\sanitize::country($country);
 		if (\blobfolio\common\mb::strlen($country) === 2) {
 			if (!in_array($country, data\prefixes::COUNTRIES, true)) {
