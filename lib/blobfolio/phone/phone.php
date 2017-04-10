@@ -50,7 +50,10 @@ class phone {
 	 * @param string $country Country.
 	 * @return bool True/false.
 	 */
-	public function __construct(string $phone='', string $country='') {
+	public function __construct($phone='', $country='') {
+		\blobfolio\common\ref\cast::string($phone, true);
+		\blobfolio\common\ref\cast::string($country, true);
+
 		$this->phone = false;
 
 		static::sanitize_phone($phone);
@@ -97,7 +100,8 @@ class phone {
 	 * @param array $countries Countries.
 	 * @return bool True/false.
 	 */
-	protected function match(string $phone='', $countries=array()) {
+	protected function match($phone='', $countries=array()) {
+		\blobfolio\common\ref\cast::string($phone, true);
 		\blobfolio\common\ref\cast::array($countries);
 
 		foreach ($countries as $c) {
@@ -164,12 +168,13 @@ class phone {
 	 * @param string $key Data key.
 	 * @return mixed Phone data. False on failure.
 	 */
-	public function get_data(string $key=null) {
+	public function get_data($key=null) {
 		if (!$this->is_phone()) {
 			return false;
 		}
 
 		if (!is_null($key)) {
+			\blobfolio\common\ref\cast::string($key, true);
 			return isset($this->phone[$key]) ? $this->phone[$key] : false;
 		}
 
@@ -184,7 +189,7 @@ class phone {
 	 * @param string $phone Phone number.
 	 * @return bool True/false.
 	 */
-	public static function sanitize_phone(string &$phone = '') {
+	public static function sanitize_phone(&$phone = '') {
 		\blobfolio\common\ref\cast::string($phone);
 
 		// Replace number chars.
