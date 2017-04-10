@@ -51,7 +51,7 @@ abstract class data {
 						continue;
 					}
 
-					$out = \blobfolio\phone\phone::DEFAULT;
+					$out = \blobfolio\phone\phone::TEMPLATE;
 					$out['country'] = static::CODE;
 					$out['prefix'] = static::PREFIX;
 					$out['region'] = static::REGION;

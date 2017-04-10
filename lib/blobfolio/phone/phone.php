@@ -26,7 +26,7 @@ class phone {
 	const MIN_LENGTH = 3;
 	const MAX_LENGTH = 30;
 
-	const DEFAULT = array(
+	const TEMPLATE = array(
 		'country'=>'',
 		'prefix'=>0,
 		'region'=>'',
