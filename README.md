@@ -31,7 +31,7 @@ Other data and formatting features from `libphonenumber` have been stripped out 
 
 blob-phone requires:
 
- * PHP 7.0+
+ * PHP 5.6+
  * [blobfolio/blob-common](https://github.com/Blobfolio/blob-common)
  * [neitanod/forceutf8](https://github.com/neitanod/forceutf8)
 
