@@ -8,6 +8,8 @@
 
 namespace blobfolio\phone;
 
+use \blobfolio\common;
+
 class phone {
 
 	const TYPES = array(
@@ -51,8 +53,8 @@ class phone {
 	 * @return bool True/false.
 	 */
 	public function __construct($phone='', $country='') {
-		\blobfolio\common\ref\cast::to_string($phone, true);
-		\blobfolio\common\ref\cast::to_string($country, true);
+		common\ref\cast::to_string($phone, true);
+		common\ref\cast::to_string($country, true);
 
 		$this->phone = false;
 
@@ -101,8 +103,8 @@ class phone {
 	 * @return bool True/false.
 	 */
 	protected function match($phone='', $countries=array()) {
-		\blobfolio\common\ref\cast::to_string($phone, true);
-		\blobfolio\common\ref\cast::to_array($countries);
+		common\ref\cast::to_string($phone, true);
+		common\ref\cast::to_array($countries);
 
 		foreach ($countries as $c) {
 			if (in_array($c, $this->tried, true)) {
@@ -149,8 +151,8 @@ class phone {
 	 */
 	public function is_phone($type=null) {
 		if (!is_null($type)) {
-			\blobfolio\common\ref\cast::to_array($type);
-			\blobfolio\common\ref\mb::strtolower($type);
+			common\ref\cast::to_array($type);
+			common\ref\mb::strtolower($type);
 			$type = array_filter($type, 'strlen');
 			if (!count($type)) {
 				$type = null;
@@ -174,7 +176,7 @@ class phone {
 		}
 
 		if (!is_null($key)) {
-			\blobfolio\common\ref\cast::to_string($key, true);
+			common\ref\cast::to_string($key, true);
 			return isset($this->phone[$key]) ? $this->phone[$key] : false;
 		}
 
@@ -190,16 +192,16 @@ class phone {
 	 * @return bool True/false.
 	 */
 	public static function sanitize_phone(&$phone = '') {
-		\blobfolio\common\ref\cast::to_string($phone);
+		common\ref\cast::to_string($phone);
 
 		// Replace number chars.
-		$from = array_keys(\blobfolio\common\constants::NUMBER_CHARS);
-		$to = array_values(\blobfolio\common\constants::NUMBER_CHARS);
+		$from = array_keys(common\constants::NUMBER_CHARS);
+		$to = array_values(common\constants::NUMBER_CHARS);
 		$phone = str_replace($from, $to, $phone);
 
 		$phone = preg_replace('/[^\d]/', '', $phone);
 
-		if (!\blobfolio\common\data::length_in_range($phone, static::MIN_LENGTH, static::MAX_LENGTH)) {
+		if (!common\data::length_in_range($phone, static::MIN_LENGTH, static::MAX_LENGTH)) {
 			$phone = false;
 		}
 
@@ -215,9 +217,9 @@ class phone {
 	 * @return bool True/false.
 	 */
 	public static function sanitize_country(&$country='') {
-		\blobfolio\common\ref\cast::to_string($country, true);
-		\blobfolio\common\ref\sanitize::country($country);
-		if (\blobfolio\common\mb::strlen($country) === 2) {
+		common\ref\cast::to_string($country, true);
+		common\ref\sanitize::country($country);
+		if (common\mb::strlen($country) === 2) {
 			if (!in_array($country, data\prefixes::COUNTRIES, true)) {
 				$country = false;
 			}

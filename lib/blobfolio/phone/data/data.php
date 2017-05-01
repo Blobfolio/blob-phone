@@ -19,6 +19,9 @@
 
 namespace blobfolio\phone\data;
 
+use \blobfolio\common;
+use \blobfolio\phone\phone;
+
 abstract class data {
 
 	/**
@@ -28,8 +31,8 @@ abstract class data {
 	 * @return array|bool Phone data. False on failure.
 	 */
 	public static function match($phone='') {
-		\blobfolio\common\ref\cast::to_string($phone, true);
-		\blobfolio\phone\phone::sanitize_phone($phone);
+		common\ref\cast::to_string($phone, true);
+		phone::sanitize_phone($phone);
 		if (false === $phone) {
 			return false;
 		}
@@ -37,8 +40,8 @@ abstract class data {
 		// Test the number with and without the prefix.
 		$test = array($phone);
 		$tmp = ltrim($phone, '0');
-		if (\blobfolio\common\mb::substr($tmp, 0, \blobfolio\common\mb::strlen(static::PREFIX)) === (string) static::PREFIX) {
-			$test[] = \blobfolio\common\mb::substr($tmp, \blobfolio\common\mb::strlen(static::PREFIX));
+		if (common\mb::substr($tmp, 0, common\mb::strlen(static::PREFIX)) === (string) static::PREFIX) {
+			$test[] = common\mb::substr($tmp, common\mb::strlen(static::PREFIX));
 		}
 
 		// Do they match the patterns?
@@ -51,7 +54,7 @@ abstract class data {
 						continue;
 					}
 
-					$out = \blobfolio\phone\phone::TEMPLATE;
+					$out = phone::TEMPLATE;
 					$out['country'] = static::CODE;
 					$out['prefix'] = static::PREFIX;
 					$out['region'] = static::REGION;
@@ -72,7 +75,7 @@ abstract class data {
 	 * @return string Phone number.
 	 */
 	protected static function format($phone='') {
-		\blobfolio\common\ref\cast::to_string($phone, true);
+		common\ref\cast::to_string($phone, true);
 		foreach (static::FORMATS as $k=>$v) {
 			if (preg_match("/^($k)$/", $phone)) {
 				return preg_replace("/^$k$/", $v, $phone);
@@ -90,7 +93,7 @@ abstract class data {
 	 * @return array Types.
 	 */
 	protected static function types($phone='') {
-		\blobfolio\common\ref\cast::to_string($phone, true);
+		common\ref\cast::to_string($phone, true);
 
 		$out = array();
 
