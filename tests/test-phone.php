@@ -2,11 +2,13 @@
 /**
  * Phone tests.
  *
- * PHPUnit tests for \blobfolio\phone\phone.
+ * PHPUnit tests for phone.
  *
  * @package blobfolio/phone
  * @author	Blobfolio, LLC <hello@blobfolio.com>
  */
+
+use \blobfolio\phone\phone;
 
 /**
  * Test Suite
@@ -19,7 +21,7 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_valid_us_with_country() {
-		$p = new \blobfolio\phone\phone(2015550123, 'US');
+		$p = new phone(2015550123, 'US');
 		$p = $p->get_data();
 
 		// Valid data.
@@ -36,7 +38,7 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_valid_us_without_country() {
-		$p = new \blobfolio\phone\phone(2015550123);
+		$p = new phone(2015550123);
 		$p = $p->get_data();
 
 		// Valid data.
@@ -53,7 +55,7 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_valid_uy_with_country() {
-		$p = new \blobfolio\phone\phone(94231234, 'UY');
+		$p = new phone(94231234, 'UY');
 		$p = $p->get_data();
 
 		// Valid data.
@@ -70,7 +72,7 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_valid_ca_with_wrong_country() {
-		$p = new \blobfolio\phone\phone(2042345678, 'US');
+		$p = new phone(2042345678, 'US');
 		$p = $p->get_data();
 
 		// Valid data.
@@ -87,7 +89,7 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_valid_cn_with_country() {
-		$p = new \blobfolio\phone\phone(1012345678, 'CN');
+		$p = new phone(1012345678, 'CN');
 		$p = $p->get_data();
 
 		// Valid data.
@@ -104,22 +106,22 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 	 * @return void Nothing.
 	 */
 	function test_mobile() {
-		$p = new \blobfolio\phone\phone(2015550123, 'US');
+		$p = new phone(2015550123, 'US');
 		$this->assertEquals( true, $p->is_phone('mobile'));
 
-		$p = new \blobfolio\phone\phone(94231234, 'UY');
+		$p = new phone(94231234, 'UY');
 		$this->assertEquals( true, $p->is_phone('mobile'));
 
-		$p = new \blobfolio\phone\phone(2042345678, 'CA');
+		$p = new phone(2042345678, 'CA');
 		$this->assertEquals( true, $p->is_phone('mobile'));
 
-		$p = new \blobfolio\phone\phone(1012345678, 'CN');
+		$p = new phone(1012345678, 'CN');
 		$this->assertEquals( false, $p->is_phone('mobile'));
 
-		$p = new \blobfolio\phone\phone(10123456, 'AM');
+		$p = new phone(10123456, 'AM');
 		$this->assertEquals( false, $p->is_phone('mobile'));
 
-		$p = new \blobfolio\phone\phone(612345678, 'GB');
+		$p = new phone(612345678, 'GB');
 		$this->assertEquals( false, $p->is_phone('mobile'));
 	}
 }
