@@ -112,7 +112,7 @@ class phone {
 			}
 
 			$this->tried[] = $c;
-			$func = "blobfolio\\phone\\data\\data$c";
+			$func = "\\blobfolio\\phone\\data\\data$c";
 			@require_once(dirname(__FILE__) . "/data/src/data$c.txt");
 			if (false !== $tmp = $func::match($phone)) {
 				$this->phone = $tmp;
