@@ -19,11 +19,21 @@
  * @author	Blobfolio, LLC <hello@blobfolio.com>
  */
 
+/**
+ * Data Source: libphonenumber
+ *
+ * @see {https://raw.githubusercontent.com/googlei18n/libphonenumber/master/resources/PhoneNumberMetadata.xml}
+ *
+ * @copyright 2017 Google
+ * @license https://www.apache.org/licenses/LICENSE-2.0 Apache
+ */
+
 // -------------------------------------------------
 // Setup/Env
 
 define('BUILD_PATH', dirname(__FILE__));
 define('SOURCE_PATH', BUILD_PATH . '/src');
+define('SKEL_PATH', BUILD_PATH . '/skel');
 define('DIST_PATH', dirname(BUILD_PATH) . '/lib/blobfolio/phone/data');
 define('DATA_PATH', DIST_PATH . '/src');
 
@@ -473,33 +483,32 @@ if ($handle = opendir(DATA_PATH)) {
 }
 
 debug_stdout('   ++ Generating new classes...');
+$template = file_get_contents(SKEL_PATH . '/data.template');
 ksort($data);
 foreach ($data as $k=>$v) {
-	$content = "<?php\n//" . str_repeat('-', 70);
-	$content .= "\n// DATA: $k\n//" . str_repeat('-', 70);
-	$content .= "\n// generated: " . date('Y-m-d H:i:s');
-	$content .= "\n\n\nnamespace blobfolio\\phone\\data;\n\nclass data$k extends data {\n\n";
-	$content .= "\tconst CODE = '$k';\n\n";
-	$content .= "\tconst PREFIX = {$v['prefix']};\n\n";
-	$content .= "\tconst REGION = '{$v['region']}';\n\n";
-	$content .= "\tconst PATTERNS = array(" . array_to_php($v['patterns'], 2) . ");\n\n";
-	$content .= "\tconst TYPES = array(" . array_to_php($v['types'], 2) . ");\n\n";
-	$content .= "\tconst FORMATS = array(" . array_to_php($v['formats'], 2) . ");\n\n";
-	$content .= "}\n?>";
-
-	@file_put_contents(DATA_PATH . "/data$k.txt", $content);
+	$replace = array(
+		'%CODE%'=>$k,
+		'%FORMATS%'=>array_to_php($v['formats'], 2),
+		'%GENERATED%'=>date('Y-m-d H:i:s'),
+		'%PATTERNS%'=>array_to_php($v['patterns'], 2),
+		'%PREFIX%'=>$v['prefix'],
+		'%REGION%'=>$v['region'],
+		'%TYPES%'=>array_to_php($v['types'], 2),
+	);
+	$out = str_replace(array_keys($replace), array_values($replace), $template);
+	@file_put_contents(DATA_PATH . "/data$k.txt", $out);
 }
 
 ksort($prefixes);
-$content = "<?php\n// @codingStandardsIgnoreFile\n//" . str_repeat('-', 70);
-$content .= "\n// DATA: Prefixes\n//" . str_repeat('-', 70);
-$content .= "\n// generated: " . date('Y-m-d H:i:s');
-$content .= "\n\n\nnamespace blobfolio\\phone\\data;\n\nclass prefixes {\n\n";
-$content .= "\tconst PREFIXES = array(" . array_to_php($prefixes, 2) . ");\n\n";
-$content .= "\tconst REGIONS = array(" . array_to_php($regions, 2) . ");\n\n";
-$content .= "\tconst COUNTRIES = array(" . array_to_php(array_keys($data), 2) . ");\n\n";
-$content .= "}\n?>";
-@file_put_contents(DIST_PATH . '/prefixes.php', $content);
+$template = file_get_contents(SKEL_PATH . '/prefixes.template');
+$replace = array(
+	'%GENERATED%'=>date('Y-m-d H:i:s'),
+	'%COUNTRIES%'=>array_to_php(array_keys($data), 2),
+	'%PREFIXES%'=>array_to_php($prefixes, 2),
+	'%REGIONS%'=>array_to_php($regions, 2),
+);
+$out = str_replace(array_keys($replace), array_values($replace), $template);
+@file_put_contents(DIST_PATH . '/prefixes.php', $out);
 
 $end = microtime(true);
 debug_stdout('');
