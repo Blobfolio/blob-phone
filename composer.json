@@ -7,10 +7,10 @@
     "phone",
     "formatting"
   ],
-  "version": "0.9.0",
+  "version": "1.0.0",
   "type": "library",
   "homepage": "https:\/\/github.com\/Blobfolio\/blob-phone",
-  "license": "Apache",
+  "license": "WTFPL",
   "authors": [
     {
       "name": "Josh Stoik",
