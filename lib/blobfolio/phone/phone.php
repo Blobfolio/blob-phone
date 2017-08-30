@@ -22,7 +22,7 @@ class phone {
 		'toll_free',
 		'uan',
 		'voicemail',
-		'voip'
+		'voip',
 	);
 
 	const MIN_LENGTH = 3;
@@ -33,7 +33,7 @@ class phone {
 		'prefix'=>0,
 		'region'=>'',
 		'types'=>array(),
-		'number'=>''
+		'number'=>'',
 	);
 
 	const DEFAULT_REGION = 'US';

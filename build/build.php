@@ -46,7 +46,7 @@ define('TERRITORY_DEFAULT', array(
 	'region'=>'',
 	'patterns'=>array(),
 	'types'=>array(),
-	'formats'=>array()
+	'formats'=>array(),
 ));
 
 define('TYPE_MAP', array(
@@ -57,7 +57,7 @@ define('TYPE_MAP', array(
 	'shared_cost'=>'sharedCost',
 	'toll_free'=>'tollFree',
 	'voicemail'=>'voicemail',
-	'voip'=>'voip'
+	'voip'=>'voip',
 ));
 
 define('XML_REMOTE', 'https://raw.githubusercontent.com/googlei18n/libphonenumber/master/resources/PhoneNumberMetadata.xml');
@@ -107,7 +107,7 @@ function cache_path(string $url) {
 	// Strip and translate a little.
 	$url = strtolower($url);
 	$url = preg_replace('/^https?:\/\//', '', $url);
-	$url = str_replace(array('/','\\','?','#'), '-', $url);
+	$url = str_replace(array('/', '\\', '?', '#'), '-', $url);
 
 	return SOURCE_PATH . '/' . $url;
 }
