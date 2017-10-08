@@ -36,6 +36,7 @@ define('SOURCE_PATH', BUILD_PATH . '/src');
 define('SKEL_PATH', BUILD_PATH . '/skel');
 define('DIST_PATH', dirname(BUILD_PATH) . '/lib/blobfolio/phone/data');
 define('DATA_PATH', DIST_PATH . '/src');
+define('JS_PATH', dirname(BUILD_PATH) . '/lib/js');
 
 // Load the bootstrap.
 @require_once(dirname(dirname(__FILE__)) . '/lib/vendor/autoload.php');
@@ -509,6 +510,20 @@ $replace = array(
 );
 $out = str_replace(array_keys($replace), array_values($replace), $template);
 @file_put_contents(DIST_PATH . '/prefixes.php', $out);
+
+
+
+// Build the Javascript.
+$js = file_get_contents(SKEL_PATH . '/blob-phone.js');
+$replace = array(
+	'%DATA%'=>json_encode($data),
+	'%REGIONS%'=>json_encode($regions),
+	'%PREFIXES%'=>json_encode($prefixes),
+);
+$out = str_replace(array_keys($replace), array_values($replace), $js);
+@file_put_contents(JS_PATH . '/blob-phone.js', $out);
+
+
 
 $end = microtime(true);
 debug_stdout('');
