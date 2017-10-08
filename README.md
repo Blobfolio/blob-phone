@@ -11,6 +11,7 @@ blob-phone is a light(er)-weight implementation of Google's amazing [libphonenum
  * [Features](#features)
  * [Installation](#installation)
  * [Use](#use)
+ * [Javascript](#javascript)
  * [License](#license)
 
 &nbsp;
@@ -29,11 +30,10 @@ Other data and formatting features from `libphonenumber` have been stripped out 
 
 ## Installation
 
-blob-phone requires:
+The PHP library for blob-phone requires:
 
  * PHP 5.6+
  * [blobfolio/blob-common](https://github.com/Blobfolio/blob-common)
- * [neitanod/forceutf8](https://github.com/neitanod/forceutf8)
 
 Install with Composer:
 
@@ -129,6 +129,37 @@ if (strlen($phone)) {
 else {
     echo "I don't think that was right...";
 }
+```
+
+&nbsp;
+
+## Javascript
+
+blob-phone is also available as a dependency-free Javascript library. To use it, simply include `lib/js/blob-phone.min.js` in your project.
+
+This library has a single method: `blobPhone.parse()`, which takes two arguments:
+
+ * (*string*) Phone number (pre-formatted or not);
+ * (*string*) (*optional*) ISO country code (suspected); Default: `"US"`
+
+Providing a probable country of origin will help with identification, so is recommended. Otherwise your number may end up on the wrong side of the planet.
+
+This will return `FALSE` if the number could not be parsed, or an object containing the number details, like:
+
+```js
+var parsed = blobPhone.parse(2015550123);
+/*
+{
+    country: "US",
+    number: "+1 201-555-0123",
+    prefix: 1,
+    region: "North America",
+    types: [
+        "fixed",
+        "mobile"
+    ]
+}
+*/
 ```
 
 &nbsp;
