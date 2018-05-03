@@ -8,7 +8,12 @@
 
 namespace blobfolio\phone;
 
-use \blobfolio\common;
+use \blobfolio\common\constants;
+use \blobfolio\common\data as c_data;
+use \blobfolio\common\mb as v_mb;
+use \blobfolio\common\ref\cast as r_cast;
+use \blobfolio\common\ref\mb as r_mb;
+use \blobfolio\common\ref\sanitize as r_sanitize;
 
 class phone {
 
@@ -52,35 +57,45 @@ class phone {
 	 * @param string $country Country.
 	 * @return bool True/false.
 	 */
-	public function __construct($phone='', $country='') {
-		common\ref\cast::to_string($phone, true);
-		common\ref\cast::to_string($country, true);
+	public function __construct($phone='', string $country='') {
+		r_cast::string($phone, true);
+		r_cast::string($country, true);
+
+		// Lock UTF-8 Casting.
+		$lock = constants::$str_lock;
+		constants::$str_lock = true;
 
 		$this->phone = false;
-
 		static::sanitize_phone($phone);
 
-		if (false === $phone) {
+		if (!$phone) {
+			constants::$str_lock = false;
 			return false;
 		}
 
 		static::sanitize_country($country);
-		if (false === $country) {
+		if (!$country) {
 			$country = 'US';
 		}
 
+		constants::$str_lock = false;
+
 		// Try the main country first.
 		if (false === $this->match($phone, $country)) {
+			// There are too many damn countries! To prevent autoloader
+			// overload, these classes are stored as innocent text files
+			// and included here as needed.
 			$func = "\\blobfolio\\phone\\data\\data$country";
-			@require_once(dirname(__FILE__) . "/data/src/data$country.txt");
+			@require_once(__DIR__ . "/data/src/data$country.txt");
 
 			// Try countries with the same prefix.
 			if (false === $this->match($phone, data\prefixes::PREFIXES[$func::PREFIX])) {
 				// Try countries from the broad region.
-				if (strlen($func::REGION)) {
-					if ($this->match($phone, data\prefixes::REGIONS[$func::REGION])) {
-						return true;
-					}
+				if (
+					$func::REGION &&
+					$this->match($phone, data\prefixes::REGIONS[$func::REGION])
+				) {
+					return true;
 				}
 			}
 			else {
@@ -103,18 +118,22 @@ class phone {
 	 * @return bool True/false.
 	 */
 	protected function match($phone='', $countries=array()) {
-		common\ref\cast::to_string($phone, true);
-		common\ref\cast::to_array($countries);
+		r_cast::string($phone, true);
+		r_cast::array($countries);
 
 		foreach ($countries as $c) {
-			if (in_array($c, $this->tried, true)) {
+			if (!$c || !is_string($c) || isset($this->tried[$c])) {
 				continue;
 			}
 
-			$this->tried[] = $c;
+			// There are too many damn countries! To prevent autoloader
+			// overload, these classes are stored as innocent text files
+			// and included here as needed.
+			$this->tried[$c] = true;
 			$func = "\\blobfolio\\phone\\data\\data$c";
-			@require_once(dirname(__FILE__) . "/data/src/data$c.txt");
-			if (false !== $tmp = $func::match($phone)) {
+			@require_once(__DIR__ . "/data/src/data$c.txt");
+
+			if (false !== ($tmp = $func::match($phone))) {
 				$this->phone = $tmp;
 				return true;
 			}
@@ -151,14 +170,27 @@ class phone {
 	 */
 	public function is_phone($type=null) {
 		if (!is_null($type)) {
-			common\ref\cast::to_array($type);
-			common\ref\mb::strtolower($type);
-			$type = array_filter($type, 'strlen');
+			// We want an array with lowercase strings.
+			r_cast::array($type);
+			foreach ($type as $k=>$v) {
+				if (is_string($type[$k])) {
+					$type[$k] = strtolower($type[$k]);
+				}
+
+				if (!$type[$k]) {
+					unset($type[$k]);
+				}
+			}
+
 			if (!count($type)) {
 				$type = null;
 			}
 		}
-		return false !== $this->phone && (is_null($type) || count(array_intersect($type, $this->phone['types'])));
+
+		return (
+			(false !== $this->phone) &&
+			(is_null($type) || count(array_intersect($type, $this->phone['types'])))
+		);
 	}
 
 	/**
@@ -175,8 +207,8 @@ class phone {
 			return false;
 		}
 
-		if (!is_null($key)) {
-			common\ref\cast::to_string($key, true);
+		if (is_string($key)) {
+			$key = strtolower($key);
 			return isset($this->phone[$key]) ? $this->phone[$key] : false;
 		}
 
@@ -192,16 +224,16 @@ class phone {
 	 * @return bool True/false.
 	 */
 	public static function sanitize_phone(&$phone = '') {
-		common\ref\cast::to_string($phone);
+		r_cast::string($phone, true);
 
 		// Replace number chars.
-		$from = array_keys(common\constants::NUMBER_CHARS);
-		$to = array_values(common\constants::NUMBER_CHARS);
+		$from = array_keys(constants::NUMBER_CHARS);
+		$to = array_values(constants::NUMBER_CHARS);
 		$phone = str_replace($from, $to, $phone);
 
 		$phone = preg_replace('/[^\d]/', '', $phone);
 
-		if (!common\data::length_in_range($phone, static::MIN_LENGTH, static::MAX_LENGTH)) {
+		if (!c_data::length_in_range($phone, static::MIN_LENGTH, static::MAX_LENGTH)) {
 			$phone = false;
 		}
 
@@ -217,14 +249,20 @@ class phone {
 	 * @return bool True/false.
 	 */
 	public static function sanitize_country(&$country='') {
-		common\ref\cast::to_string($country, true);
-		common\ref\sanitize::country($country);
-		if (common\mb::strlen($country) === 2) {
-			if (!in_array($country, data\prefixes::COUNTRIES, true)) {
-				$country = false;
-			}
-		}
-		else {
+		r_cast::string($country, true);
+
+		// Lock UTF-8 Casting.
+		$lock = constants::$str_lock;
+		constants::$str_lock = true;
+
+		r_sanitize::country($country);
+
+		constants::$str_lock = false;
+
+		if (
+			!$country ||
+			!in_array($country, data\prefixes::COUNTRIES, true)
+		) {
 			$country = false;
 		}
 

@@ -19,7 +19,9 @@
 
 namespace blobfolio\phone\data;
 
-use \blobfolio\common;
+use \blobfolio\common\constants;
+use \blobfolio\common\mb as v_mb;
+use \blobfolio\common\ref\cast as r_cast;
 use \blobfolio\phone\phone;
 
 abstract class data {
@@ -31,17 +33,24 @@ abstract class data {
 	 * @return array|bool Phone data. False on failure.
 	 */
 	public static function match($phone='') {
-		common\ref\cast::to_string($phone, true);
+		r_cast::string($phone, true);
+
+		// Lock UTF-8 Casting.
+		$lock = constants::$str_lock;
+		constants::$str_lock = true;
+
 		phone::sanitize_phone($phone);
 		if (false === $phone) {
+			constants::$str_lock = false;
 			return false;
 		}
 
 		// Test the number with and without the prefix.
 		$test = array($phone);
 		$tmp = ltrim($phone, '0');
-		if (common\mb::substr($tmp, 0, common\mb::strlen(static::PREFIX)) === (string) static::PREFIX) {
-			$test[] = common\mb::substr($tmp, common\mb::strlen(static::PREFIX));
+		$length = strlen(static::PREFIX);
+		if (0 === strpos($tmp, static::PREFIX)) {
+			$test[] = substr($tmp, $length);
 		}
 
 		// Do they match the patterns?
@@ -60,11 +69,14 @@ abstract class data {
 					$out['region'] = static::REGION;
 					$out['types'] = $types;
 					$out['number'] = '+' . static::PREFIX . ' ' . static::format($t);
+
+					constants::$str_lock = false;
 					return $out;
 				}
 			}
 		}
 
+		constants::$str_lock = false;
 		return false;
 	}
 
@@ -74,8 +86,7 @@ abstract class data {
 	 * @param string $phone Phone number.
 	 * @return string Phone number.
 	 */
-	protected static function format($phone='') {
-		common\ref\cast::to_string($phone, true);
+	protected static function format(string $phone='') {
 		foreach (static::FORMATS as $k=>$v) {
 			if (preg_match("/^($k)$/", $phone)) {
 				return preg_replace("/^$k$/", $v, $phone);
@@ -92,9 +103,7 @@ abstract class data {
 	 * @param string $phone Phone number.
 	 * @return array Types.
 	 */
-	protected static function types($phone='') {
-		common\ref\cast::to_string($phone, true);
-
+	protected static function types(string $phone='') {
 		$out = array();
 
 		foreach (static::TYPES as $k=>$v) {
@@ -104,8 +113,8 @@ abstract class data {
 		}
 
 		if (count($out)) {
-			sort($out);
 			$out = array_unique($out);
+			sort($out);
 		}
 
 		return $out;
