@@ -47,9 +47,8 @@ abstract class data {
 		// Test the number with and without the prefix.
 		$test = array($phone);
 		$tmp = ltrim($phone, '0');
-		$length = strlen(static::PREFIX);
-		if (0 === strpos($tmp, static::PREFIX)) {
-			$test[] = substr($tmp, $length);
+		if (0 === strpos($tmp, strval(static::PREFIX))) {
+			$test[] = substr($tmp, strlen(static::PREFIX));
 		}
 
 		// Do they match the patterns?
@@ -119,5 +118,4 @@ abstract class data {
 		return $out;
 	}
 }
-
 
