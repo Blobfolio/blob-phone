@@ -32,7 +32,7 @@ Other data and formatting features from `libphonenumber` have been stripped out 
 
 The PHP library for blob-phone requires:
 
- * PHP 5.6+
+ * PHP 7.0+
  * [blobfolio/blob-common](https://github.com/Blobfolio/blob-common)
 
 Install with Composer:
