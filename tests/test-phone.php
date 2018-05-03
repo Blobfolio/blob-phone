@@ -184,6 +184,20 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 					'number'=>'+1 201-555-0123',
 				),
 			),
+			array(
+				'+1 201 555 0123',
+				'US',
+				array(
+					'country'=> 'US',
+					'prefix'=> 1,
+					'region'=> 'North America',
+					'types'=>array(
+						'fixed',
+						'mobile',
+					),
+					'number'=> '+1 201-555-0123',
+				),
+			),
 		);
 	}
 
