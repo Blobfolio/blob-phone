@@ -184,18 +184,31 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 					'number'=>'+1 201-555-0123',
 				),
 			),
+			// An ambiguous number.
 			array(
 				'+1 201 555 0123',
 				'US',
 				array(
-					'country'=> 'US',
-					'prefix'=> 1,
-					'region'=> 'North America',
+					'country'=>'US',
+					'prefix'=>1,
+					'region'=>'North America',
 					'types'=>array(
 						'fixed',
 						'mobile',
 					),
-					'number'=> '+1 201-555-0123',
+					'number'=>'+1 201-555-0123',
+				),
+			),
+			// Same as above but with a different country passed.
+			array(
+				'+1 201 555 0123',
+				'AT',
+				array(
+					'country'=>'AT',
+					'prefix'=>43,
+					'region'=>'Europe',
+					'types'=>array('fixed'),
+					'number'=>'+43 1 2015550123',
 				),
 			),
 		);
