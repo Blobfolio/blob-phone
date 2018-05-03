@@ -20,7 +20,6 @@
 namespace blobfolio\phone\data;
 
 use \blobfolio\common\constants;
-use \blobfolio\common\mb as v_mb;
 use \blobfolio\common\ref\cast as r_cast;
 use \blobfolio\phone\phone;
 
