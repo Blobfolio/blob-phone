@@ -104,14 +104,24 @@ class phone extends \blobfolio\bob\base\build {
 
 			// Check country first.
 			$out['code'] = $territory->getAttribute('id');
+
+			// Google is confused about Vietnam's country code.
+			if ('VU' === $out['code']) {
+				$out['code'] = 'VN';
+			}
+
+			// Beyond that country code should validate.
 			r_sanitize::country($out['code']);
 			if (!$out['code']) {
 				continue;
 			}
-
-			// A few other easy details.
 			$out['prefix'] = (int) $territory->getAttribute('countryCode');
 			$out['region'] = constants::COUNTRIES[$out['code']]['region'];
+
+			// Zero isn't a prefix.
+			if (!$out['prefix']) {
+				continue;
+			}
 
 			// Get patterns.
 			$patterns = $territory->getElementsByTagName('nationalNumberPattern');
