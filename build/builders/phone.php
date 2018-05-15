@@ -17,36 +17,37 @@
 
 namespace blobfolio\dev;
 
-use \blobfolio\bob\utility;
+use \blobfolio\bob\format;
+use \blobfolio\bob\io;
+use \blobfolio\bob\log;
 use \blobfolio\common\constants;
 use \blobfolio\common\file as v_file;
 use \blobfolio\common\ref\sanitize as r_sanitize;
 use \DOMDocument;
 
-class phone extends \blobfolio\bob\base\build {
-	const NAME = 'phone';
+class phone extends \blobfolio\bob\base\mike {
+	// Project Name.
+	const NAME = 'blob-phone';
+	const DESCRIPTION = "blob-phone is a light(er)-weight implementation of Google's amazing libphonenumber for PHP.";
+	const CONFIRMATION = '';
+	const SLUG = '';
 
-	// Intl should catch this, but just in case...
+	// Runtime requirements.
 	const REQUIRED_FUNCTIONS = array('libxml_use_internal_errors');
 	const REQUIRED_CLASSES = array('DOMDocument');
-	const BINARIES = array('grunt');
-	const DOWNLOADS = array('https://raw.githubusercontent.com/googlei18n/libphonenumber/master/resources/PhoneNumberMetadata.xml');
+	const REQUIRED_DOWNLOADS = array(
+		'https://raw.githubusercontent.com/googlei18n/libphonenumber/master/resources/PhoneNumberMetadata.xml',
+	);
 
-	// We aren't using binaries or build steps.
-	const SKIP_BINARY_DEPENDENCIES = false;
-	const SKIP_BUILD = false;
-	const SKIP_FILE_DEPENDENCIES = true;
-	const SKIP_PACKAGE = false;
-
-	// Paths.
-	const DATA_OUT = BOB_ROOT_DIR . 'lib/blobfolio/phone/data/src/';
-	const DATA_TEMPLATE = BOB_BUILD_DIR . 'skel/data.template';
-	const JS_OUT = BOB_ROOT_DIR . 'lib/js/blob-phone.js';
-	const JS_TEMPLATE = BOB_BUILD_DIR . 'skel/blob-phone.js';
-	const PREFIX_OUT = BOB_ROOT_DIR . 'lib/blobfolio/phone/data/prefixes.php';
-	const PREFIX_TEMPLATE = BOB_BUILD_DIR . 'skel/prefixes.template';
-
-	const REMOTE = 'https://raw.githubusercontent.com/googlei18n/libphonenumber/master/resources/PhoneNumberMetadata.xml';
+	// Functions to run to complete the build, in order, grouped by
+	// heading.
+	const ACTIONS = array(
+		'Updating Data'=>array(
+			'build',
+			'package',
+			'post_package',
+		),
+	);
 
 	const TERRITORY = array(
 		'code'=>'',
@@ -74,20 +75,17 @@ class phone extends \blobfolio\bob\base\build {
 
 
 
-	// -----------------------------------------------------------------
-	// Build
-	// -----------------------------------------------------------------
-
 	/**
-	 * Build Tasks
+	 * Build
+	 *
+	 * Parse the data and shove it into variables.
 	 *
 	 * @return void Nothing.
 	 */
-	protected static function build_tasks() {
-		utility::log('Loading data…');
+	public static function build() {
+		log::print('Loading data…');
 
-		// Load the data.
-		$raw = file_get_contents(static::$downloads[static::REMOTE]);
+		$raw = io::get_url(static::REQUIRED_DOWNLOADS[0]);
 		libxml_use_internal_errors(true);
 		$dom = new DOMDocument('1.0', 'UTF-8');
 		$dom->loadXML($raw);
@@ -95,10 +93,10 @@ class phone extends \blobfolio\bob\base\build {
 		// Start by getting <territory> tags.
 		$territories = $dom->getElementsByTagName('territory');
 		if (!$territories->length) {
-			utility::log('Invalid data.', 'error');
+			log::error('Invalid data.');
 		}
 
-		utility::log('Parsing territories…');
+		log::print('Parsing territories…');
 		foreach ($territories as $territory) {
 			$out = static::TERRITORY;
 
@@ -217,7 +215,7 @@ class phone extends \blobfolio\bob\base\build {
 			static::$regions[$out['region']][] = $out['code'];
 		} // Each territory.
 
-		utility::log('Patching NANPA territories…');
+		log::print('Patching NANPA territories…');
 
 		foreach (static::$data as $k=>$v) {
 			// The US is already set.
@@ -229,7 +227,7 @@ class phone extends \blobfolio\bob\base\build {
 			static::$data[$k]['formats'] = static::$data['US']['formats'];
 		}
 
-		utility::log('Sorting data…');
+		log::print('Sorting data…');
 
 		ksort(static::$data);
 		ksort(static::$prefixes);
@@ -239,7 +237,7 @@ class phone extends \blobfolio\bob\base\build {
 			sort(static::$regions[$k]);
 		}
 
-		static::print_record_count(count(static::$data));
+		log::total(count(static::$data));
 	}
 
 	/**
@@ -248,59 +246,75 @@ class phone extends \blobfolio\bob\base\build {
 	 * @return void Nothing.
 	 */
 	protected static function package() {
-		utility::log('Exporting territories…');
+		log::print('Exporting territories…');
+
+		// Set up some paths.
+		$root = dirname(BOB_ROOT_DIR) . '/';
+		$skel = BOB_ROOT_DIR . 'skel/';
+
+		// All the country classes.
+		$data_out = "{$root}lib/blobfolio/phone/data/src/";
+		$data_template = "{$skel}data.template";
+
+		// The Javascript file.
+		$js_out = "{$root}lib/js/blob-phone.js";
+		$js_template = "{$skel}blob-phone.js";
+
+		// The prefix constants.
+		$prefix_out = "{$root}lib/blobfolio/phone/data/prefixes.php";
+		$prefix_template = "{$skel}prefixes.template";
 
 		// Remove the output directory so we can start fresh.
-		v_file::rmdir(static::DATA_OUT);
-		v_file::mkdir(static::DATA_OUT, 0755);
+		v_file::rmdir($data_out);
+		v_file::mkdir($data_out, 0755);
 
-		$template = file_get_contents(static::DATA_TEMPLATE);
+		$template = file_get_contents($data_template);
 		$now = date('Y-m-d H:i:s');
 
 		foreach (static::$data as $k=>$v) {
-			$file = static::DATA_OUT . "data{$k}.txt";
+			$file = $data_out . "data{$k}.txt";
 
 			$replace = array(
 				'%CODE%'=>$k,
-				'%FORMATS%'=>utility::array_to_php($v['formats'], 2),
+				'%FORMATS%'=>format::array_to_php($v['formats'], 2),
 				'%GENERATED%'=>$now,
-				'%PATTERNS%'=>utility::array_to_php($v['patterns'], 2),
+				'%PATTERNS%'=>format::array_to_php($v['patterns'], 2),
 				'%PREFIX%'=>$v['prefix'],
 				'%REGION%'=>$v['region'],
-				'%TYPES%'=>utility::array_to_php($v['types'], 2),
+				'%TYPES%'=>format::array_to_php($v['types'], 2),
 			);
 			$out = str_replace(array_keys($replace), array_values($replace), $template);
 			file_put_contents($file, $out);
 			chmod($file, 0644);
 		}
 
-		utility::log('Exporting prefixes…');
+		log::print('Exporting prefixes…');
 
-		$template = file_get_contents(static::PREFIX_TEMPLATE);
+		$template = file_get_contents($prefix_template);
 
 		$replace = array(
 			'%GENERATED%'=>date('Y-m-d H:i:s'),
-			'%COUNTRIES%'=>utility::array_to_php(array_keys(static::$data), 2),
-			'%PREFIXES%'=>utility::array_to_php(static::$prefixes, 2),
-			'%REGIONS%'=>utility::array_to_php(static::$regions, 2),
+			'%COUNTRIES%'=>format::array_to_php(array_keys(static::$data), 2),
+			'%PREFIXES%'=>format::array_to_php(static::$prefixes, 2),
+			'%REGIONS%'=>format::array_to_php(static::$regions, 2),
 		);
 
 		// We want numeric indexes for prefixes (our utility helper
 		// auto-quotes everything).
 		$replace['%PREFIXES%'] = preg_replace("/'(\d+)'=>/", '$1=>', $replace['%PREFIXES%']);
 		$out = str_replace(array_keys($replace), array_values($replace), $template);
-		file_put_contents(static::PREFIX_OUT, $out);
+		file_put_contents($prefix_out, $out);
 
-		utility::log('Exporting Javascript library…');
+		log::print('Exporting Javascript library…');
 
-		$template = file_get_contents(static::JS_TEMPLATE);
+		$template = file_get_contents($js_template);
 		$replace = array(
 			'%DATA%'=>json_encode(static::$data),
 			'%REGIONS%'=>json_encode(static::$regions),
 			'%PREFIXES%'=>json_encode(static::$prefixes),
 		);
 		$out = str_replace(array_keys($replace), array_values($replace), $template);
-		file_put_contents(static::JS_OUT, $out);
+		file_put_contents($js_out, $out);
 
 		// Free up some memory.
 		unset($out);
@@ -317,31 +331,7 @@ class phone extends \blobfolio\bob\base\build {
 	 * @return void Nothing.
 	 */
 	protected static function post_package() {
-		utility::log('Minifying Javascript library…');
-
-		if (isset(static::$deps['grunt'])) {
-			static::$deps['grunt']->run_task(BOB_ROOT_DIR, 'javascript');
-		}
+		log::print('Minifying Javascript library…');
+		io::grunt_task(dirname(BOB_ROOT_DIR), 'javascript');
 	}
-
-	// ----------------------------------------------------------------- end build
-
-
-
-	// -----------------------------------------------------------------
-	// Helpers
-	// -----------------------------------------------------------------
-
-	/**
-	 * Record Count
-	 *
-	 * @param int $count Count.
-	 * @return void Nothing.
-	 */
-	protected static function print_record_count(int $count) {
-		$count = number_format($count, 0, '.', ',');
-		utility::log("Total TLDs: $count", 'success');
-	}
-
-	// ----------------------------------------------------------------- end helpers
 }
