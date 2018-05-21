@@ -59,17 +59,11 @@ class phone {
 	 */
 	public function __construct($phone='', string $country='') {
 		r_cast::string($phone, true);
-		r_cast::string($country, true);
-
-		// Lock UTF-8 Casting.
-		$lock = constants::$str_lock;
-		constants::$str_lock = true;
 
 		$this->phone = false;
-		static::sanitize_phone($phone);
+		static::sanitize_phone($phone, true);
 
 		if (!$phone) {
-			constants::$str_lock = false;
 			return false;
 		}
 
@@ -77,8 +71,6 @@ class phone {
 		if (!$country) {
 			$country = 'US';
 		}
-
-		constants::$str_lock = false;
 
 		// Try the main country first.
 		if (false === $this->match($phone, $country)) {
@@ -89,11 +81,11 @@ class phone {
 			@require_once(__DIR__ . "/data/src/data$country.txt");
 
 			// Try countries with the same prefix.
-			if (false === $this->match($phone, data\prefixes::PREFIXES[$func::PREFIX])) {
+			if (false === $this->match($phone, data\prefixes::PREFIXES[$func::PREFIX], true)) {
 				// Try countries from the broad region.
 				if (
 					$func::REGION &&
-					$this->match($phone, data\prefixes::REGIONS[$func::REGION])
+					$this->match($phone, data\prefixes::REGIONS[$func::REGION], true)
 				) {
 					return true;
 				}
@@ -107,7 +99,7 @@ class phone {
 		}
 
 		// Try everything else.
-		return $this->match($phone, data\prefixes::COUNTRIES);
+		return $this->match($phone, data\prefixes::COUNTRIES, true);
 	}
 
 	/**
@@ -115,10 +107,11 @@ class phone {
 	 *
 	 * @param string $phone Phone number.
 	 * @param array $countries Countries.
+	 * @param bool $constringent Light cast.
 	 * @return bool True/false.
 	 */
-	protected function match($phone='', $countries=array()) {
-		r_cast::string($phone, true);
+	protected function match($phone='', $countries=array(), bool $constringent=false) {
+		r_cast::constringent($phone, $constringent);
 		r_cast::array($countries);
 
 		foreach ($countries as $c) {
@@ -133,7 +126,7 @@ class phone {
 			$func = "\\blobfolio\\phone\\data\\data$c";
 			@require_once(__DIR__ . "/data/src/data$c.txt");
 
-			if (false !== ($tmp = $func::match($phone))) {
+			if (false !== ($tmp = $func::match($phone, true))) {
 				$this->phone = $tmp;
 				return true;
 			}
@@ -221,10 +214,11 @@ class phone {
 	 * Reduce a string to only digits.
 	 *
 	 * @param string $phone Phone number.
+	 * @param bool $constringent Light cast.
 	 * @return bool True/false.
 	 */
-	public static function sanitize_phone(&$phone = '') {
-		r_cast::string($phone, true);
+	public static function sanitize_phone(&$phone = '', bool $constringent=false) {
+		r_cast::constringent($phone, $constringent);
 
 		// Replace number chars.
 		$from = array_keys(constants::NUMBER_CHARS);
@@ -246,18 +240,11 @@ class phone {
 	 * Make sure the country is an ISO code.
 	 *
 	 * @param string $country Country.
+	 * @param bool $constringent Light cast.
 	 * @return bool True/false.
 	 */
-	public static function sanitize_country(&$country='') {
-		r_cast::string($country, true);
-
-		// Lock UTF-8 Casting.
-		$lock = constants::$str_lock;
-		constants::$str_lock = true;
-
-		r_sanitize::country($country);
-
-		constants::$str_lock = false;
+	public static function sanitize_country(string &$country='', bool $constringent=false) {
+		r_sanitize::country($country, $constringent);
 
 		if (
 			!$country ||

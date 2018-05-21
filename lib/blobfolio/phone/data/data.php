@@ -29,18 +29,21 @@ abstract class data {
 	 * Validate a Number
 	 *
 	 * @param string $phone Phone number.
+	 * @param bool $constringent Light cast.
 	 * @return array|bool Phone data. False on failure.
 	 */
-	public static function match($phone='') {
-		r_cast::string($phone, true);
+	public static function match($phone='', bool $constringent=false) {
+		if (!is_string($phone)) {
+			if (is_numeric($phone)) {
+				$phone = (string) $phone;
+			}
+			else {
+				return false;
+			}
+		}
 
-		// Lock UTF-8 Casting.
-		$lock = constants::$str_lock;
-		constants::$str_lock = true;
-
-		phone::sanitize_phone($phone);
+		phone::sanitize_phone($phone, $constringent);
 		if (false === $phone) {
-			constants::$str_lock = false;
 			return false;
 		}
 
@@ -68,13 +71,11 @@ abstract class data {
 					$out['types'] = $types;
 					$out['number'] = '+' . static::PREFIX . ' ' . static::format($t);
 
-					constants::$str_lock = false;
 					return $out;
 				}
 			}
 		}
 
-		constants::$str_lock = false;
 		return false;
 	}
 
