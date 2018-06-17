@@ -1,12 +1,19 @@
 {
   "name": "blob-phone",
   "devDependencies": {
-    "grunt": "*",
-    "grunt-contrib-jshint": "*",
-    "grunt-contrib-clean": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-contrib-uglify": "*",
-    "grunt-notify": "*",
-    "grunt-blobfolio": "git+ssh://git@blobfolio.com:3417/grunt-blobfolio"
+    "blobfolio-phpcs": "git+ssh://git@blobfolio.com:3417/blobfolio-phpcs"
+  },
+  "scripts": {
+    "preinstall": "npm list onchange -g || npm install onchange -g",
+    "watch": "npm run -s watch:js & npm run -s watch:php",
+    "watch:js": "onchange 'src/js/**/*.js' -- npm run -s js",
+    "watch:php": "onchange '*.php' '**/*.php' -- npm run -s php",
+    "js": "npm run -s eslint && npm run -s uglify && npm run -s notify:js",
+    "eslint": "npm_scripts/js-eslint.sh",
+    "eslint:fix": "npm_scripts/js-eslint-fix.sh",
+    "uglify": "npm_scripts/js-uglify.sh",
+    "notify:js": "npm_scripts/notify-js.sh",
+    "php": "npm_scripts/php.sh",
+    "php:fix": "npm_scripts/php-fix.sh"
   }
 }

@@ -332,6 +332,6 @@ class phone extends \blobfolio\bob\base\mike {
 	 */
 	protected static function post_package() {
 		log::print('Minifying Javascript library…');
-		io::grunt_task(dirname(BOB_ROOT_DIR), 'javascript');
+		io::npm_script(dirname(BOB_ROOT_DIR), 'js');
 	}
 }
