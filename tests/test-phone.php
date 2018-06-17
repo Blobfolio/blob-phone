@@ -8,6 +8,7 @@
  * @author	Blobfolio, LLC <hello@blobfolio.com>
  */
 
+use \blobfolio\common\constants;
 use \blobfolio\phone\phone;
 
 /**
@@ -15,114 +16,249 @@ use \blobfolio\phone\phone;
  */
 class phone_tests extends \PHPUnit\Framework\TestCase {
 
+	// -----------------------------------------------------------------
+	// Set up
+	// -----------------------------------------------------------------
+
 	/**
-	 * Valid US Number, w/ Country
+	 * Before Test
+	 *
+	 * String cast bypass should be off before the test.
 	 *
 	 * @return void Nothing.
 	 */
-	function test_valid_us_with_country() {
-		$p = new phone(2015550123, 'US');
-		$p = $p->get_data();
-
-		// Valid data.
-		$this->assertEquals( true, is_array($p) );
-		$this->assertEquals( 'US', $p['country'] );
-		$this->assertEquals( 1, $p['prefix'] );
-		$this->assertEquals( 'North America', $p['region'] );
-		$this->assertEquals( '+1 201-555-0123', $p['number'] );
+	protected function setUp() {
+		$this->assertFalse(constants::$str_lock);
 	}
 
 	/**
-	 * Valid US Number, w/o Country
+	 * After Test
+	 *
+	 * String cast bypass should still be off after the test.
 	 *
 	 * @return void Nothing.
 	 */
-	function test_valid_us_without_country() {
-		$p = new phone(2015550123);
-		$p = $p->get_data();
-
-		// Valid data.
-		$this->assertEquals( true, is_array($p) );
-		$this->assertEquals( 'US', $p['country'] );
-		$this->assertEquals( 1, $p['prefix'] );
-		$this->assertEquals( 'North America', $p['region'] );
-		$this->assertEquals( '+1 201-555-0123', $p['number'] );
+	protected function tearDown() {
+		$this->assertFalse(constants::$str_lock);
 	}
 
-	/**
-	 * Uruguay Number
-	 *
-	 * @return void Nothing.
-	 */
-	function test_valid_uy_with_country() {
-		$p = new phone(94231234, 'UY');
-		$p = $p->get_data();
+	// ----------------------------------------------------------------- end setup
 
-		// Valid data.
-		$this->assertEquals( true, is_array($p) );
-		$this->assertEquals( 'UY', $p['country'] );
-		$this->assertEquals( 598, $p['prefix'] );
-		$this->assertEquals( 'South America', $p['region'] );
-		$this->assertEquals( '+598 9423 1234', $p['number'] );
-	}
+
+
+	// -----------------------------------------------------------------
+	// Tests
+	// -----------------------------------------------------------------
 
 	/**
-	 * Canadian Number, Wrong Country
+	 * Test ->get_data()
 	 *
+	 * @dataProvider data_get_data
+	 *
+	 * @param string $phone Phone.
+	 * @param string $country Country.
+	 * @param mixed $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_valid_ca_with_wrong_country() {
-		$p = new phone(2042345678, 'US');
-		$p = $p->get_data();
-
-		// Valid data.
-		$this->assertEquals( true, is_array($p) );
-		$this->assertEquals( 'CA', $p['country'] );
-		$this->assertEquals( 1, $p['prefix'] );
-		$this->assertEquals( 'North America', $p['region'] );
-		$this->assertEquals( '+1 204-234-5678', $p['number'] );
-	}
-
-	/**
-	 * Chinese Number
-	 *
-	 * @return void Nothing.
-	 */
-	function test_valid_cn_with_country() {
-		$p = new phone(1012345678, 'CN');
-		$p = $p->get_data();
-
-		// Valid data.
-		$this->assertEquals( true, is_array($p) );
-		$this->assertEquals( 'CN', $p['country'] );
-		$this->assertEquals( 86, $p['prefix'] );
-		$this->assertEquals( 'Asia', $p['region'] );
-		$this->assertEquals( '+86 10 1234 5678', $p['number'] );
+	function test_get_data($phone, $country, $expected) {
+		if ($country) {
+			$thing = new phone($phone, $country);
+		}
+		else {
+			$thing = new phone($phone);
+		}
+		$this->assertSame($expected, $thing->get_data());
 	}
 
 	/**
 	 * Test Mobile Type Detection
 	 *
+	 * @dataProvider data_mobile
+	 *
+	 * @param string $phone Phone.
+	 * @param string $country Country.
+	 * @param bool $expected Expected.
 	 * @return void Nothing.
 	 */
-	function test_mobile() {
-		$p = new phone(2015550123, 'US');
-		$this->assertEquals( true, $p->is_phone('mobile'));
-
-		$p = new phone(94231234, 'UY');
-		$this->assertEquals( true, $p->is_phone('mobile'));
-
-		$p = new phone(2042345678, 'CA');
-		$this->assertEquals( true, $p->is_phone('mobile'));
-
-		$p = new phone(1012345678, 'CN');
-		$this->assertEquals( false, $p->is_phone('mobile'));
-
-		$p = new phone(10123456, 'AM');
-		$this->assertEquals( false, $p->is_phone('mobile'));
-
-		$p = new phone(612345678, 'GB');
-		$this->assertEquals( false, $p->is_phone('mobile'));
+	function test_mobile($phone, string $country, bool $expected) {
+		$thing = new phone($phone, $country);
+		$this->assertSame($expected, $thing->is_phone('mobile'));
 	}
+
+	// ----------------------------------------------------------------- end tests
+
+
+
+	// -----------------------------------------------------------------
+	// Data
+	// -----------------------------------------------------------------
+
+	/**
+	 * Data for ->get_data()
+	 *
+	 * @return array Data.
+	 */
+	function data_get_data() {
+		return array(
+			// Valid Chinese number w/ Country.
+			array(
+				1012345678,
+				'CN',
+				array(
+					'country'=>'CN',
+					'prefix'=>86,
+					'region'=>'Asia',
+					'types'=>array('fixed'),
+					'number'=>'+86 10 1234 5678',
+				),
+			),
+			// Canadian number w/ wrong country.
+			array(
+				2042345678,
+				'US',
+				array(
+					'country'=>'CA',
+					'prefix'=>1,
+					'region'=>'North America',
+					'types'=>array(
+						'fixed',
+						'mobile',
+					),
+					'number'=>'+1 204-234-5678',
+				),
+			),
+			// Uruguay.
+			array(
+				94231234,
+				'UY',
+				array(
+					'country'=>'UY',
+					'prefix'=>598,
+					'region'=>'South America',
+					'types'=>array('mobile'),
+					'number'=>'+598 9423 1234',
+				),
+			),
+			// US w/o country.
+			array(
+				2015550123,
+				null,
+				array(
+					'country'=>'US',
+					'prefix'=>1,
+					'region'=>'North America',
+					'types'=>array(
+						'fixed',
+						'mobile',
+					),
+					'number'=>'+1 201-555-0123',
+				),
+			),
+			// US w/ country.
+			array(
+				2015550123,
+				'US',
+				array(
+					'country'=>'US',
+					'prefix'=>1,
+					'region'=>'North America',
+					'types'=>array(
+						'fixed',
+						'mobile',
+					),
+					'number'=>'+1 201-555-0123',
+				),
+			),
+			// Same as above but pre-formatted.
+			array(
+				'(201) 555.0123',
+				'US',
+				array(
+					'country'=>'US',
+					'prefix'=>1,
+					'region'=>'North America',
+					'types'=>array(
+						'fixed',
+						'mobile',
+					),
+					'number'=>'+1 201-555-0123',
+				),
+			),
+			// An ambiguous number.
+			array(
+				'+1 201 555 0123',
+				'US',
+				array(
+					'country'=>'US',
+					'prefix'=>1,
+					'region'=>'North America',
+					'types'=>array(
+						'fixed',
+						'mobile',
+					),
+					'number'=>'+1 201-555-0123',
+				),
+			),
+			// Same as above but with a different country passed.
+			array(
+				'+1 201 555 0123',
+				'AT',
+				array(
+					'country'=>'AT',
+					'prefix'=>43,
+					'region'=>'Europe',
+					'types'=>array('fixed'),
+					'number'=>'+43 1 2015550123',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Data for Mobile
+	 *
+	 * @return array Data.
+	 */
+	function data_mobile() {
+		return array(
+			array(
+				2015550123,
+				'US',
+				true,
+			),
+			array(
+				'(702) 405-0333',
+				'US',
+				true,
+			),
+			array(
+				94231234,
+				'UY',
+				true,
+			),
+			array(
+				2042345678,
+				'CA',
+				true,
+			),
+			array(
+				1012345678,
+				'CN',
+				false,
+			),
+			array(
+				10123456,
+				'AM',
+				false,
+			),
+			array(
+				612345678,
+				'GB',
+				false,
+			),
+		);
+	}
+
+	// ----------------------------------------------------------------- end data
 }
 
