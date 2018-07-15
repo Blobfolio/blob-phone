@@ -316,6 +316,15 @@ class phone extends \blobfolio\bob\base\mike {
 		$out = str_replace(array_keys($replace), array_values($replace), $template);
 		file_put_contents($js_out, $out);
 
+		log::print('Exporting JSON too…');
+		$json = array(
+			'data'=>static::$data,
+			'regions'=>static::$regions,
+			'prefixes'=>static::$prefixes,
+		);
+		$json = json_encode($json);
+		file_put_contents($root . 'bin/blob-phone.json', $json);
+
 		// Free up some memory.
 		unset($out);
 		unset($replace);
