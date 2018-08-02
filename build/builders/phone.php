@@ -322,6 +322,11 @@ class phone extends \blobfolio\bob\base\mike {
 			'regions'=>static::$regions,
 			'prefixes'=>static::$prefixes,
 		);
+		// Let's join match patterns before we output it.
+		foreach ($json['data'] as $k=>$v) {
+			$json['data'][$k]['patterns'] = '^((' . implode(')|(', $v['patterns']) . '))$';
+		}
+
 		$json = json_encode($json);
 		file_put_contents($root . 'bin/blob-phone.json', $json);
 
