@@ -29,10 +29,9 @@ abstract class data {
 	 * Validate a Number
 	 *
 	 * @param string $phone Phone number.
-	 * @param bool $constringent Light cast.
 	 * @return array|bool Phone data. False on failure.
 	 */
-	public static function match($phone='', bool $constringent=false) {
+	public static function match($phone='') {
 		if (!is_string($phone)) {
 			if (is_numeric($phone)) {
 				$phone = (string) $phone;
@@ -42,7 +41,7 @@ abstract class data {
 			}
 		}
 
-		phone::sanitize_phone($phone, $constringent);
+		phone::sanitize_phone($phone);
 		if (false === $phone) {
 			return false;
 		}

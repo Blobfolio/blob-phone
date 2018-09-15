@@ -61,7 +61,7 @@ class phone {
 		r_cast::string($phone, true);
 
 		$this->phone = false;
-		static::sanitize_phone($phone, true);
+		static::sanitize_phone($phone);
 
 		if (!$phone) {
 			return false;
@@ -81,11 +81,11 @@ class phone {
 			@require_once(__DIR__ . "/data/src/data$country.txt");
 
 			// Try countries with the same prefix.
-			if (false === $this->match($phone, data\prefixes::PREFIXES[$func::PREFIX], true)) {
+			if (false === $this->match($phone, data\prefixes::PREFIXES[$func::PREFIX])) {
 				// Try countries from the broad region.
 				if (
 					$func::REGION &&
-					$this->match($phone, data\prefixes::REGIONS[$func::REGION], true)
+					$this->match($phone, data\prefixes::REGIONS[$func::REGION])
 				) {
 					return true;
 				}
@@ -99,7 +99,7 @@ class phone {
 		}
 
 		// Try everything else.
-		return $this->match($phone, data\prefixes::COUNTRIES, true);
+		return $this->match($phone, data\prefixes::COUNTRIES);
 	}
 
 	/**
@@ -107,11 +107,10 @@ class phone {
 	 *
 	 * @param string $phone Phone number.
 	 * @param array $countries Countries.
-	 * @param bool $constringent Light cast.
 	 * @return bool True/false.
 	 */
-	protected function match($phone='', $countries=array(), bool $constringent=false) {
-		r_cast::constringent($phone, $constringent);
+	protected function match($phone='', $countries=array()) {
+		r_cast::string($phone, true);
 		r_cast::array($countries);
 
 		foreach ($countries as $c) {
@@ -126,7 +125,7 @@ class phone {
 			$func = "\\blobfolio\\phone\\data\\data$c";
 			@require_once(__DIR__ . "/data/src/data$c.txt");
 
-			if (false !== ($tmp = $func::match($phone, true))) {
+			if (false !== ($tmp = $func::match($phone))) {
 				$this->phone = $tmp;
 				return true;
 			}
@@ -214,11 +213,10 @@ class phone {
 	 * Reduce a string to only digits.
 	 *
 	 * @param string $phone Phone number.
-	 * @param bool $constringent Light cast.
 	 * @return bool True/false.
 	 */
-	public static function sanitize_phone(&$phone = '', bool $constringent=false) {
-		r_cast::constringent($phone, $constringent);
+	public static function sanitize_phone(&$phone = '') {
+		r_cast::string($phone, true);
 
 		// Replace number chars.
 		$from = array_keys(constants::NUMBER_CHARS);
@@ -240,11 +238,10 @@ class phone {
 	 * Make sure the country is an ISO code.
 	 *
 	 * @param string $country Country.
-	 * @param bool $constringent Light cast.
 	 * @return bool True/false.
 	 */
-	public static function sanitize_country(string &$country='', bool $constringent=false) {
-		r_sanitize::country($country, $constringent);
+	public static function sanitize_country(string &$country='') {
+		r_sanitize::country($country);
 
 		if (
 			!$country ||
