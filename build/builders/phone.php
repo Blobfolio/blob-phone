@@ -17,13 +17,13 @@
 
 namespace blobfolio\dev;
 
-use \blobfolio\bob\format;
-use \blobfolio\bob\io;
-use \blobfolio\bob\log;
-use \blobfolio\common\constants;
-use \blobfolio\common\file as v_file;
-use \blobfolio\common\ref\sanitize as r_sanitize;
-use \DOMDocument;
+use blobfolio\bob\format;
+use blobfolio\bob\io;
+use blobfolio\bob\log;
+use blobfolio\common\constants;
+use blobfolio\common\file as v_file;
+use blobfolio\common\ref\sanitize as r_sanitize;
+use DOMDocument;
 
 class phone extends \blobfolio\bob\base\mike {
 	// Project Name.
@@ -86,13 +86,13 @@ class phone extends \blobfolio\bob\base\mike {
 		log::print('Loading data…');
 
 		$raw = io::get_url(static::REQUIRED_DOWNLOADS[0]);
-		libxml_use_internal_errors(true);
+		\libxml_use_internal_errors(true);
 		$dom = new DOMDocument('1.0', 'UTF-8');
 		$dom->loadXML($raw);
 
 		// Start by getting <territory> tags.
 		$territories = $dom->getElementsByTagName('territory');
-		if (!$territories->length) {
+		if (! $territories->length) {
 			log::error('Invalid data.');
 		}
 
@@ -110,37 +110,37 @@ class phone extends \blobfolio\bob\base\mike {
 
 			// Beyond that country code should validate.
 			r_sanitize::country($out['code']);
-			if (!$out['code']) {
+			if (! $out['code']) {
 				continue;
 			}
 			$out['prefix'] = (int) $territory->getAttribute('countryCode');
 			$out['region'] = constants::COUNTRIES[$out['code']]['region'];
 
 			// Zero isn't a prefix.
-			if (!$out['prefix']) {
+			if (! $out['prefix']) {
 				continue;
 			}
 
 			// Get patterns.
 			$patterns = $territory->getElementsByTagName('nationalNumberPattern');
-			if (!$patterns->length) {
+			if (! $patterns->length) {
 				continue;
 			}
 			foreach ($patterns as $pattern) {
 				// Strip whitespace.
-				$p = preg_replace('/\s/u', '', $pattern->nodeValue);
-				if (!$p) {
+				$p = \preg_replace('/\s/u', '', $pattern->nodeValue);
+				if (! $p) {
 					continue;
 				}
 
 				$type = $pattern->parentNode->tagName;
 				if ('generalDesc' === $type) {
-					if (!in_array($p, $out['patterns'], true)) {
+					if (! \in_array($p, $out['patterns'], true)) {
 						$out['patterns'][] = $p;
 					}
 				}
-				elseif (false !== ($nice = array_search($type, static::TYPE_MAP, true))) {
-					if (!isset($out['types'][$p])) {
+				elseif (false !== ($nice = \array_search($type, static::TYPE_MAP, true))) {
+					if (! isset($out['types'][$p])) {
 						$out['types'][$p] = array();
 					}
 					$out['types'][$p][] = $nice;
@@ -148,14 +148,14 @@ class phone extends \blobfolio\bob\base\mike {
 			}
 
 			// Ignore if there are no patterns or patterns.
-			if (!count($out['patterns']) || !count($out['types'])) {
+			if (! \count($out['patterns']) || ! \count($out['types'])) {
 				continue;
 			}
 
 			// Sort types.
 			foreach ($out['types'] as $k=>$v) {
-				$out['types'][$k] = array_unique($out['types'][$k]);
-				sort($out['types'][$k]);
+				$out['types'][$k] = \array_unique($out['types'][$k]);
+				\sort($out['types'][$k]);
 			}
 
 			// And finally, formatting patterns.
@@ -163,8 +163,8 @@ class phone extends \blobfolio\bob\base\mike {
 			if ($formats->length) {
 				foreach ($formats as $format) {
 					// Strip whitespace again.
-					$p = preg_replace('/\s/u', '', $format->getAttribute('pattern'));
-					if (!$p) {
+					$p = \preg_replace('/\s/u', '', $format->getAttribute('pattern'));
+					if (! $p) {
 						continue;
 					}
 
@@ -172,7 +172,7 @@ class phone extends \blobfolio\bob\base\mike {
 					$f = $format->getElementsByTagName('intlFormat');
 					if (
 						$f->length &&
-						(false !== (strpos($f->item(0)->nodeValue, '$')))
+						(false !== (\strpos($f->item(0)->nodeValue, '$')))
 					) {
 						$out['formats'][$p] = $f->item(0)->nodeValue;
 						continue;
@@ -182,7 +182,7 @@ class phone extends \blobfolio\bob\base\mike {
 					$f = $format->getElementsByTagName('format');
 					if (
 						$f->length &&
-						(false !== (strpos($f->item(0)->nodeValue, '$')))
+						(false !== (\strpos($f->item(0)->nodeValue, '$')))
 					) {
 						$out['formats'][$p] = $f->item(0)->nodeValue;
 						continue;
@@ -194,14 +194,14 @@ class phone extends \blobfolio\bob\base\mike {
 			static::$data[$out['code']] = $out;
 
 			// Add the prefixes.
-			if (!isset(static::$prefixes[$out['prefix']])) {
+			if (! isset(static::$prefixes[$out['prefix']])) {
 				static::$prefixes[$out['prefix']] = array();
 			}
 
 			// This is the prefix's main country.
 			$main = $territory->getAttribute('mainCountryForCode');
 			if ('true' === $main) {
-				array_unshift(static::$prefixes[$out['prefix']], $out['code']);
+				\array_unshift(static::$prefixes[$out['prefix']], $out['code']);
 			}
 			// It is just another damn place.
 			else {
@@ -209,7 +209,7 @@ class phone extends \blobfolio\bob\base\mike {
 			}
 
 			// Update the region list.
-			if (!isset(static::$regions[$out['region']])) {
+			if (! isset(static::$regions[$out['region']])) {
 				static::$regions[$out['region']] = array();
 			}
 			static::$regions[$out['region']][] = $out['code'];
@@ -229,15 +229,15 @@ class phone extends \blobfolio\bob\base\mike {
 
 		log::print('Sorting data…');
 
-		ksort(static::$data);
-		ksort(static::$prefixes);
+		\ksort(static::$data);
+		\ksort(static::$prefixes);
 
-		ksort(static::$regions);
+		\ksort(static::$regions);
 		foreach (static::$regions as $k=>$v) {
-			sort(static::$regions[$k]);
+			\sort(static::$regions[$k]);
 		}
 
-		log::total(count(static::$data));
+		log::total(\count(static::$data));
 	}
 
 	/**
@@ -249,8 +249,8 @@ class phone extends \blobfolio\bob\base\mike {
 		log::print('Exporting territories…');
 
 		// Set up some paths.
-		$root = dirname(BOB_ROOT_DIR) . '/';
-		$skel = BOB_ROOT_DIR . 'skel/';
+		$root = \dirname(\BOB_ROOT_DIR) . '/';
+		$skel = \BOB_ROOT_DIR . 'skel/';
 
 		// All the country classes.
 		$data_out = "{$root}lib/blobfolio/phone/data/src/";
@@ -268,8 +268,8 @@ class phone extends \blobfolio\bob\base\mike {
 		v_file::rmdir($data_out);
 		v_file::mkdir($data_out, 0755);
 
-		$template = file_get_contents($data_template);
-		$now = date('Y-m-d H:i:s');
+		$template = \file_get_contents($data_template);
+		$now = \date('Y-m-d H:i:s');
 
 		foreach (static::$data as $k=>$v) {
 			$file = $data_out . "data{$k}.txt";
@@ -283,38 +283,38 @@ class phone extends \blobfolio\bob\base\mike {
 				'%REGION%'=>$v['region'],
 				'%TYPES%'=>format::array_to_php($v['types'], 2),
 			);
-			$out = str_replace(array_keys($replace), array_values($replace), $template);
-			file_put_contents($file, $out);
-			chmod($file, 0644);
+			$out = \str_replace(\array_keys($replace), \array_values($replace), $template);
+			\file_put_contents($file, $out);
+			\chmod($file, 0644);
 		}
 
 		log::print('Exporting prefixes…');
 
-		$template = file_get_contents($prefix_template);
+		$template = \file_get_contents($prefix_template);
 
 		$replace = array(
-			'%GENERATED%'=>date('Y-m-d H:i:s'),
-			'%COUNTRIES%'=>format::array_to_php(array_keys(static::$data), 2),
+			'%GENERATED%'=>\date('Y-m-d H:i:s'),
+			'%COUNTRIES%'=>format::array_to_php(\array_keys(static::$data), 2),
 			'%PREFIXES%'=>format::array_to_php(static::$prefixes, 2),
 			'%REGIONS%'=>format::array_to_php(static::$regions, 2),
 		);
 
 		// We want numeric indexes for prefixes (our utility helper
 		// auto-quotes everything).
-		$replace['%PREFIXES%'] = preg_replace("/'(\d+)'=>/", '$1=>', $replace['%PREFIXES%']);
-		$out = str_replace(array_keys($replace), array_values($replace), $template);
-		file_put_contents($prefix_out, $out);
+		$replace['%PREFIXES%'] = \preg_replace("/'(\d+)'=>/", '$1=>', $replace['%PREFIXES%']);
+		$out = \str_replace(\array_keys($replace), \array_values($replace), $template);
+		\file_put_contents($prefix_out, $out);
 
 		log::print('Exporting Javascript library…');
 
-		$template = file_get_contents($js_template);
+		$template = \file_get_contents($js_template);
 		$replace = array(
-			'%DATA%'=>json_encode(static::$data),
-			'%REGIONS%'=>json_encode(static::$regions),
-			'%PREFIXES%'=>json_encode(static::$prefixes),
+			'%DATA%'=>\json_encode(static::$data),
+			'%REGIONS%'=>\json_encode(static::$regions),
+			'%PREFIXES%'=>\json_encode(static::$prefixes),
 		);
-		$out = str_replace(array_keys($replace), array_values($replace), $template);
-		file_put_contents($js_out, $out);
+		$out = \str_replace(\array_keys($replace), \array_values($replace), $template);
+		\file_put_contents($js_out, $out);
 
 		log::print('Exporting JSON too…');
 		$json = array(
@@ -324,11 +324,11 @@ class phone extends \blobfolio\bob\base\mike {
 		);
 		// Let's join match patterns before we output it.
 		foreach ($json['data'] as $k=>$v) {
-			$json['data'][$k]['patterns'] = '^((' . implode(')|(', $v['patterns']) . '))$';
+			$json['data'][$k]['patterns'] = '^((' . \implode(')|(', $v['patterns']) . '))$';
 		}
 
-		$json = json_encode($json);
-		file_put_contents($root . 'bin/blob-phone.json', $json);
+		$json = \json_encode($json);
+		\file_put_contents($root . 'bin/blob-phone.json', $json);
 
 		// Free up some memory.
 		unset($out);
@@ -346,6 +346,6 @@ class phone extends \blobfolio\bob\base\mike {
 	 */
 	protected static function post_package() {
 		log::print('Minifying Javascript library…');
-		io::npm_script(dirname(BOB_ROOT_DIR), 'js');
+		io::npm_script(\dirname(\BOB_ROOT_DIR), 'js');
 	}
 }

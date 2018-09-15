@@ -19,9 +19,7 @@
 
 namespace blobfolio\phone\data;
 
-use \blobfolio\common\constants;
-use \blobfolio\common\ref\cast as r_cast;
-use \blobfolio\phone\phone;
+use blobfolio\phone\phone;
 
 abstract class data {
 
@@ -32,8 +30,8 @@ abstract class data {
 	 * @return array|bool Phone data. False on failure.
 	 */
 	public static function match($phone='') {
-		if (!is_string($phone)) {
-			if (is_numeric($phone)) {
+		if (! \is_string($phone)) {
+			if (\is_numeric($phone)) {
 				$phone = (string) $phone;
 			}
 			else {
@@ -48,18 +46,18 @@ abstract class data {
 
 		// Test the number with and without the prefix.
 		$test = array($phone);
-		$tmp = ltrim($phone, '0');
-		if (0 === strpos($tmp, strval(static::PREFIX))) {
-			$test[] = substr($tmp, strlen(static::PREFIX));
+		$tmp = \ltrim($phone, '0');
+		if (0 === \strpos($tmp, \strval(static::PREFIX))) {
+			$test[] = \substr($tmp, \strlen(static::PREFIX));
 		}
 
 		// Do they match the patterns?
 		foreach ($test as $t) {
 			foreach (static::PATTERNS as $p) {
-				if (preg_match("/^($p)$/", $t)) {
+				if (\preg_match("/^($p)$/", $t)) {
 					// Should match a specific type.
 					$types = static::types($t);
-					if (!count($types)) {
+					if (! \count($types)) {
 						continue;
 					}
 
@@ -86,8 +84,8 @@ abstract class data {
 	 */
 	protected static function format(string $phone='') {
 		foreach (static::FORMATS as $k=>$v) {
-			if (preg_match("/^($k)$/", $phone)) {
-				return preg_replace("/^$k$/", $v, $phone);
+			if (\preg_match("/^($k)$/", $phone)) {
+				return \preg_replace("/^$k$/", $v, $phone);
 			}
 		}
 
@@ -105,14 +103,14 @@ abstract class data {
 		$out = array();
 
 		foreach (static::TYPES as $k=>$v) {
-			if (preg_match("/^($k)$/", $phone)) {
-				$out = array_merge($out, $v);
+			if (\preg_match("/^($k)$/", $phone)) {
+				$out = \array_merge($out, $v);
 			}
 		}
 
-		if (count($out)) {
-			$out = array_unique($out);
-			sort($out);
+		if (\count($out)) {
+			$out = \array_unique($out);
+			\sort($out);
 		}
 
 		return $out;
