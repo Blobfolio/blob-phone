@@ -78,7 +78,7 @@ class phone_tests extends \PHPUnit\Framework\TestCase {
 					'prefix'=>86,
 					'region'=>'Asia',
 					'types'=>array('fixed'),
-					'number'=>'+86 1012 345678',
+					'number'=>'+86 101 234 5678',
 				),
 			),
 			// Canadian number w/ wrong country.
